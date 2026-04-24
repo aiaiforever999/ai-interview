@@ -905,23 +905,24 @@ function startAudioMeter(stream){
 // ไม่ต้องกดปุ่มเลย
 // ══════════════════════════════════════════════════
 let _sr = null;
+let _makeRecognition = null;  // factory function
 let _vadAnalyser = null;
 let _vadBuf = null;
 let _silenceTimer = null;
-let _autoMicEnabled = true;   // เปิด auto mic ตลอด
-let _silenceMs = 1800;        // หยุดฟังหลังเงียบ 1.8s
-let _vadThreshold = 22;       // ระดับเสียงขั้นต่ำ
-let _accumText = '';           // สะสมข้อความระหว่างฟัง
+let _autoMicEnabled = true;
+let _silenceMs = 1800;
+let _vadThreshold = 22;
+let _accumText = '';
 
 function initSpeechRecognition(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){ toast('Browser ไม่รองรับ Speech Recognition — ใช้ Chrome ครับ'); return; }
 
-  function makeRecognition(){
+  _makeRecognition = function(){
     const r = new SR();
     r.lang = CFG.lang?.voiceLang || 'th-TH';
-    r.continuous = true;       // ฟังต่อเนื่องไม่ตัด
-    r.interimResults = true;   // แสดง interim ระหว่างพูด
+    r.continuous = true;
+    r.interimResults = true;
 
     r.onresult = e=>{
       let interim = '', final = '';
@@ -941,7 +942,6 @@ function initSpeechRecognition(){
     r.onend = ()=>{
       ST.isRecording = false;
       updateMicUI(false);
-      // ถ้า auto mode และ HR ไม่ได้พูด → restart ฟังต่อ
       if(_autoMicEnabled && !ST.hrTalking && !ST.isMuted){
         setTimeout(startAutoListen, 300);
       }
@@ -977,7 +977,7 @@ function startAutoListen(){
   try{
     _accumText = '';
     document.getElementById('inp').value = '';
-    _sr = _sr._make();  // สร้างใหม่ทุกครั้ง (browser requirement)
+    _sr = _makeRecognition();  // สร้างใหม่ทุกครั้ง (browser requirement)
     _sr.start();
     ST.isRecording = true;
     updateMicUI(true);
@@ -1525,4 +1525,3 @@ function toast(msg){
 </script>
 </body>
 </html>
-
