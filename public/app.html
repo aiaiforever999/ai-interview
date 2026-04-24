@@ -1352,19 +1352,19 @@ async function speakElevenLabs(text, voiceId){
     }
     const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
+    // ส่ง audio ไปยัง Simli ถ้าเชื่อมต่ออยู่ (ทำก่อน play)
+    if(SIMLI.active){
+      const actx = new AudioContext();
+      blob.arrayBuffer().then(abuf =>
+        actx.decodeAudioData(abuf).then(buf => simliSendAudio(buf)).catch(()=>{})
+      ).catch(()=>{});
+    }
     await new Promise((resolve, reject)=>{
       const audio = new Audio(url);
       audio.onended  = ()=>{ URL.revokeObjectURL(url); resolve(); };
       audio.onerror  = ()=>{ URL.revokeObjectURL(url); reject(); };
-      // Animate mouth while audio plays
       audio.onplay   = ()=>{ startLipSync(); };
       audio.onpause  = ()=> stopLipSync();
-      // ส่ง audio ไปยัง Simli ถ้าเชื่อมต่ออยู่
-      if(SIMLI.active){
-        const actx = new AudioContext();
-        const abuf = await blob.arrayBuffer();
-        actx.decodeAudioData(abuf).then(buf=>simliSendAudio(buf)).catch(()=>{});
-      }
       audio.play().catch(reject);
     });
     return true;
@@ -1525,3 +1525,4 @@ function toast(msg){
 </script>
 </body>
 </html>
+
