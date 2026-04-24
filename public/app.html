@@ -851,7 +851,9 @@ const synth = window.speechSynthesis;
 // MEDIA — request ONCE, reuse forever
 // ══════════════════════════════════════════════════
 async function initMediaOnce(){
-  document.getElementById('cam-request').style.display = 'none';
+  // ซ่อน overlay ทันที
+  const req = document.getElementById('cam-request');
+  if(req) req.style.display = 'none';
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video:{ width:{ideal:1280}, height:{ideal:720}, facingMode:'user' },
@@ -865,13 +867,14 @@ async function initMediaOnce(){
     document.getElementById('cam-lbl').textContent = 'กล้องเปิด';
     toast('กล้อง + ไมค์พร้อมแล้ว ✓');
     startAudioMeter(stream);
-    // Auto-start speech recognition using same stream (no re-prompt needed)
     initSpeechRecognition();
   } catch(e){
-    document.getElementById('cam-denied').style.display = 'flex';
+    // ถ้าไม่ได้รับอนุญาต แสดงปุ่มให้กดใหม่
+    const denied = document.getElementById('cam-denied');
+    if(denied) denied.style.display = 'flex';
     document.getElementById('cam-dot').style.background = 'var(--red)';
     document.getElementById('cam-lbl').textContent = 'ไม่มีสิทธิ์';
-    toast('ไม่ได้รับอนุญาต: '+e.message);
+    toast('กรุณาอนุญาตกล้อง/ไมค์ใน browser ครับ');
   }
 }
 function retryMedia(){
@@ -1226,6 +1229,8 @@ function startSession(){
   document.getElementById('callscreen').style.display='flex';
 
   initTalkingHead();
+  // เปิดกล้อง+ไมค์อัตโนมัติเลย ไม่ต้องรอกดปุ่ม
+  initMediaOnce();
   // เริ่ม Simli ถ้ามี Face ID
   if(SIMLI.faceId){
     setStatus('กำลังเชื่อมต่อ Simli...');
