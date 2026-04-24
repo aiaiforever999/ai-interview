@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI HR Interview — Talking Head</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0d13;--bg2:#11141d;--bg3:#181c28;--bg4:#1f2435;
+  --text:#e8eaf2;--text2:#8b94ab;--text3:#454e63;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.11);
+  --blue:#4f8ef7;--green:#34d399;--red:#f87171;--amber:#fbbf24;
+  --r:12px;--r-sm:8px;--font:'Inter','Segoe UI',sans-serif;
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text)}
+
+/* ── SETUP ── */
+#setup{width:100%;max-width:580px;margin:0 auto;padding:40px 20px 60px;display:flex;flex-direction:column;gap:20px}
+.hero{text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.22);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px}
+.hero-title{font-size:25px;font-weight:800;letter-spacing:-.5px;line-height:1.2}
+.hero-title em{font-style:normal;background:linear-gradient(135deg,#4f8ef7,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:13px;color:var(--text2);margin-top:8px;line-height:1.65}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.badge-blue{background:rgba(79,142,247,.12);color:var(--blue)}
+.badge-green{background:rgba(52,211,153,.12);color:var(--green)}
+
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:13px;color:var(--text2);font-weight:500}
+.field input,.field select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-size:14px;font-family:var(--font);padding:10px 14px;outline:none;width:100%;transition:border-color .2s,box-shadow .2s}
+.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,142,247,.1)}
+.field input::placeholder{color:var(--text3)}
+.field select option{background:var(--bg3)}
+.field-hint{font-size:11px;color:var(--text3);line-height:1.5}
+.field-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Photo upload */
+.photo-upload{display:flex;gap:14px;align-items:flex-start}
+.photo-drop{width:90px;height:90px;border-radius:var(--r);border:2px dashed var(--border2);background:var(--bg3);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;overflow:hidden;position:relative;transition:border-color .2s}
+.photo-drop:hover{border-color:var(--blue)}
+.photo-drop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo-drop-label{font-size:10px;color:var(--text3);text-align:center;line-height:1.4;padding:0 4px}
+.photo-info{flex:1;display:flex;flex-direction:column;gap:6px}
+.photo-info-title{font-size:13px;font-weight:500}
+.photo-info-sub{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* Lang grid */
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lang-btn{padding:10px 6px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);cursor:pointer;text-align:center;transition:all .15s}
+.lang-btn:hover{background:var(--bg4)}
+.lang-btn.sel{border-color:var(--blue);background:rgba(79,142,247,.08)}
+.lang-flag{font-size:20px;display:block;margin-bottom:3px}
+.lang-name{font-size:11px;font-weight:600;color:var(--text)}
+.lang-sub{font-size:10px;color:var(--text2)}
+
+/* Mic permission notice */
+.mic-notice{display:flex;align-items:flex-start;gap:10px;padding:12px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.18);border-radius:var(--r-sm)}
+.mic-notice-icon{width:20px;height:20px;flex-shrink:0;margin-top:1px}
+.mic-notice-text{font-size:12px;color:var(--text2);line-height:1.55}
+.mic-notice-text strong{color:var(--text)}
+
+.start-btn{width:100%;padding:14px;background:linear-gradient(135deg,#4f8ef7,#8b5cf6);border:none;border-radius:var(--r);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.start-btn:hover{opacity:.9}
+.start-btn:active{transform:scale(.98)}
+
+/* ── CALL SCREEN ── */
+#callscreen{display:none;flex-direction:column;height:100vh}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.tb-logo{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.tb-logo em{font-style:normal;background:linear-gradient(135deg,#4f8ef7,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tb-info{font-size:12px;color:var(--text2)}
+.tb-right{display:flex;gap:8px}
+.tpill{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);transition:all .15s}
+.tpill:hover{background:var(--bg3);color:var(--text)}
+.tpill.muted{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);color:var(--red)}
+.tpill.end{border-color:rgba(248,113,113,.3);color:var(--red)}
+.tpill.end:hover{background:rgba(248,113,113,.1)}
+
+/* Video grid */
+.video-row{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0}
+.vcell{position:relative;overflow:hidden;background:#080a10;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border)}
+.vcell:last-child{border-right:none}
+
+/* ── TALKING HEAD canvas ── */
+#talking-canvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* Webcam */
+#webcam-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
+
+/* overlays */
+.vc-overlay{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;background:linear-gradient(transparent,rgba(0,0,0,.75));display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}
+.vc-name{font-size:14px;font-weight:700;color:#fff}
+.vc-role{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px}
+.vc-tag{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:4px 10px;border-radius:20px;font-size:11px;color:#fff;font-weight:500}
+.tdot{width:6px;height:6px;border-radius:50%}
+.tdot.live{background:var(--red);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.vc-wave{display:flex;align-items:center;gap:2px;height:18px;opacity:0;transition:opacity .3s}
+.vc-wave.on{opacity:1}
+.wbar{width:3px;border-radius:3px;animation:wv .75s ease-in-out infinite}
+.wbar:nth-child(1){animation-delay:0s}.wbar:nth-child(2){animation-delay:.1s}.wbar:nth-child(3){animation-delay:.2s}.wbar:nth-child(4){animation-delay:.1s}.wbar:nth-child(5){animation-delay:0s}
+@keyframes wv{0%,100%{height:3px}50%{height:15px}}
+
+.speak-ring{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s}
+.speak-ring.on{opacity:1}
+.speak-ring svg{width:100%;height:100%}
+
+.cam-badge{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:4px 10px;border-radius:20px;font-size:11px;color:#fff;pointer-events:none}
+
+/* cam permission overlay */
+#cam-request{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(8,10,16,.95);z-index:10}
+.cam-icon-wrap{width:56px;height:56px;border-radius:50%;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);display:flex;align-items:center;justify-content:center}
+.cam-btn{padding:10px 26px;border-radius:var(--r-sm);background:linear-gradient(135deg,#059669,#34d399);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)}
+#cam-denied{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#080a10}
+.retry-btn{padding:7px 16px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font)}
+
+/* Bottom */
+.bottom{display:flex;flex-direction:column;flex-shrink:0;border-top:1px solid var(--border)}
+.statsbar{display:flex;align-items:center;gap:16px;padding:7px 18px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:11px;color:var(--text2)}
+.sval{font-weight:700;color:var(--text);font-size:12px}
+.prog-wrap{flex:1;height:3px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),#8b5cf6);transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+.chat-strip{display:flex;flex-direction:column;height:195px}
+.msgs{flex:1;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:8px;min-height:0}
+.msgs::-webkit-scrollbar{width:3px}
+.msgs::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.msg{display:flex;gap:8px;align-items:flex-start;animation:mi .25s ease}
+.msg.r{flex-direction:row-reverse}
+@keyframes mi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.mav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;border:1px solid var(--border2)}
+.mbubble{max-width:80%;font-size:13px;line-height:1.55;padding:8px 12px;border-radius:12px;border:1px solid var(--border);background:var(--bg3);color:var(--text)}
+.msg.l .mbubble{border-radius:4px 12px 12px 12px}
+.msg.r .mbubble{background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.2);border-radius:12px 4px 12px 12px}
+.tdots{padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:4px 12px 12px 12px;display:flex;gap:4px;align-items:center}
+.td{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:td 1.2s infinite}
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes td{0%,80%,100%{opacity:.3;transform:scale(.85)}40%{opacity:1;transform:scale(1)}}
+
+.input-bar{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;align-items:center}
+.itxt{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-size:13px;font-family:var(--font);padding:9px 14px;outline:none;transition:border-color .2s}
+.itxt:focus{border-color:var(--blue)}
+.itxt::placeholder{color:var(--text3)}
+.ibtn{height:38px;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;display:flex;align-items:center;justify-content:center;border:none}
+.ibtn.mic{width:38px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)}
+.ibtn.mic:hover{background:var(--bg4);color:var(--text)}
+.ibtn.mic.rec{background:rgba(248,113,113,.12);border-color:var(--red);color:var(--red);animation:mpr 1s infinite}
+@keyframes mpr{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.3)}50%{box-shadow:0 0 0 5px rgba(248,113,113,0)}}
+.ibtn.send{padding:0 18px;background:linear-gradient(135deg,var(--blue),#8b5cf6);color:#fff}
+.ibtn.send:hover{opacity:.9}
+.ibtn.send:disabled{opacity:.4;cursor:not-allowed}
+
+/* End screen */
+#endscreen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:500px;margin:auto;padding:48px 20px;gap:18px}
+.score-ring{width:88px;height:88px;position:relative;display:flex;align-items:center;justify-content:center}
+.score-ring svg{position:absolute;inset:0}
+.score-inner{z-index:1;text-align:center}
+.score-n{font-size:26px;font-weight:800;background:linear-gradient(135deg,var(--blue),#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-u{font-size:10px;color:var(--text2)}
+.end-title{font-size:20px;font-weight:700;text-align:center}
+.fb-grid{width:100%;display:flex;flex-direction:column;gap:8px}
+.fb-item{padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text2)}
+.end-acts{display:flex;gap:10px}
+.ebtn{padding:9px 18px;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);border:1px solid var(--border2);background:var(--bg2);color:var(--text);transition:all .15s}
+.ebtn:hover{background:var(--bg3)}
+.ebtn.primary{background:linear-gradient(135deg,var(--blue),#8b5cf6);border:none;color:#fff}
+
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:8px 18px;font-size:12px;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- ══════ SETUP ══════ -->
+<div id="setup">
+  <div class="hero">
+    <div class="hero-badge">AI Interview Platform</div>
+    <div class="hero-title">ระบบสัมภาษณ์งาน <em>Talking Head</em></div>
+    <div class="hero-sub">HR Avatar ปากขยับตามเสียงจริง + กล้องผู้สมัคร<br>ขอสิทธิ์ไมค์เพียงครั้งเดียว ใช้ตลอดการสัมภาษณ์</div>
+  </div>
+
+  <!-- Job -->
+  <div class="card">
+    <div class="card-title">ข้อมูลการสัมภาษณ์</div>
+    <div class="field-2">
+      <div class="field"><label>ตำแหน่งงาน</label><input id="job" placeholder="เช่น Software Engineer"/></div>
+      <div class="field"><label>บริษัท</label><input id="company" placeholder="เช่น TechCorp"/></div>
+    </div>
+    <div class="field">
+      <label>จำนวนคำถาม</label>
+      <select id="qcount">
+        <option value="5">5 คำถาม (~10 นาที)</option>
+        <option value="8" selected>8 คำถาม (~18 นาที)</option>
+        <option value="12">12 คำถาม (~25 นาที)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- HR Photo -->
+  <div class="card">
+    <div class="card-title">รูปภาพ HR <span class="badge badge-green">Talking Head</span></div>
+    <div class="photo-upload">
+      <div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <div class="photo-drop-label" id="photo-label">คลิกเพื่อ<br>อัปโหลดรูป</div>
+        <img id="photo-preview" style="display:none"/>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="onPhotoSelect(this)"/>
+      <div class="photo-info">
+        <div class="photo-info-title">อัปโหลดรูป HR</div>
+        <div class="photo-info-sub">รูปหน้าตรง พื้นหลังเรียบ จะทำให้ Talking Head ดูสมจริงที่สุด ถ้าไม่อัปโหลด ระบบจะใช้ Avatar SVG แทน</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Language -->
+  <div class="card">
+    <div class="card-title">ภาษา HR <span class="badge badge-blue">สำเนียงท้องถิ่น</span></div>
+    <div class="lang-grid" id="lang-grid"></div>
+  </div>
+
+  <!-- ElevenLabs -->
+  <div class="card">
+    <div class="card-title">
+      ElevenLabs
+      <span class="badge badge-green">เสียงคนจริง</span>
+    </div>
+
+    <!-- API Key + fetch voices -->
+    <div class="field">
+      <label>API Key</label>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;padding:10px 14px;border-radius:8px;border:1px solid rgba(52,211,153,.3);background:rgba(52,211,153,.06);font-size:12px;color:#34d399">✓ API Key ตั้งค่าใน Vercel Environment Variables แล้ว</div>
+        <button onclick="fetchVoices()" style="padding:0 14px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--font)">
+          ดึง Voices
+        </button>
+      </div>
+      <span class="field-hint">สมัครฟรีที่ <a href="https://elevenlabs.io" target="_blank" style="color:var(--blue)">elevenlabs.io</a> → Profile → API Keys — ถ้าไม่ใส่ ระบบใช้ Web Speech แทน</span>
+    </div>
+
+    <!-- Voice status -->
+    <div id="el-status" style="display:none;font-size:12px;padding:8px 12px;border-radius:var(--r-sm);background:var(--bg3);border:1px solid var(--border)"></div>
+
+    <!-- Per-dialect Voice ID -->
+    <div class="field">
+      <label>Voice ID ต่อภาค <span style="color:var(--text3);font-weight:400">— กดปุ่ม "ดึง Voices" แล้วเลือกได้เลย</span></label>
+      <div id="voice-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="field" style="gap:3px"><label style="font-size:11px">🇹🇭 กลาง</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-central"   list="vlist" placeholder="Voice ID หรือเลือกจากรายการ" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('central')"   title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+        <div class="field" style="gap:3px"><label style="font-size:11px">🏔️ เหนือ</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-north"     list="vlist" placeholder="Voice ID" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('north')"     title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+        <div class="field" style="gap:3px"><label style="font-size:11px">🌾 อีสาน</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-northeast" list="vlist" placeholder="Voice ID" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('northeast')" title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+        <div class="field" style="gap:3px"><label style="font-size:11px">🌊 ใต้</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-south"     list="vlist" placeholder="Voice ID" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('south')"     title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+        <div class="field" style="gap:3px"><label style="font-size:11px">🏭 ตะวันออก</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-east"      list="vlist" placeholder="Voice ID" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('east')"      title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+        <div class="field" style="gap:3px"><label style="font-size:11px">🇺🇸 English</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-english"   list="vlist" placeholder="Voice ID" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('english')"   title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+        <div class="field" style="gap:3px"><label style="font-size:11px">🇨🇳 中文</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-chinese"   list="vlist" placeholder="Voice ID" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('chinese')"   title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+        <div class="field" style="gap:3px"><label style="font-size:11px">🇯🇵 日本語</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-japanese"  list="vlist" placeholder="Voice ID" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('japanese')"  title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+        <div class="field" style="gap:3px"><label style="font-size:11px">🇰🇷 한국어</label>
+          <div style="display:flex;gap:4px">
+            <input id="vid-korean"    list="vlist" placeholder="Voice ID" style="font-size:12px;padding:7px 10px;flex:1"/>
+            <button onclick="testVoice('korean')"    title="ทดสอบเสียง" style="width:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px">▶</button>
+          </div>
+        </div>
+      </div>
+      <!-- datalist populated by fetchVoices() -->
+      <datalist id="vlist"></datalist>
+      <span class="field-hint" style="margin-top:2px">
+        กด ▶ เพื่อทดสอบเสียงก่อนเริ่มสัมภาษณ์ · ถ้าไม่ใส่ Voice ID ภาคไหน จะ fallback เป็น Web Speech อัตโนมัติ
+      </span>
+    </div>
+  </div>
+
+  <!-- Mic notice -->
+  <div class="card">
+    <div class="card-title">Anthropic API <span class="badge badge-blue">HR ตอบโต้ dynamic</span></div>
+    <div class="field">
+      <label>Anthropic API Key <span style="color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label>
+      <div style="padding:10px 14px;border-radius:8px;border:1px solid rgba(79,142,247,.3);background:rgba(79,142,247,.06);font-size:12px;color:#4f8ef7">✓ Anthropic API Key ตั้งค่าใน Vercel Environment Variables แล้ว</div>
+      <span class="field-hint">ถ้าใส่ → HR จะตอบโต้ได้อย่างฉลาด ผู้สมัครถามอะไรก็ตอบได้ · ถ้าไม่ใส่ → ใช้คำถาม script ตายตัว</span>
+    </div>
+  </div>
+
+  <!-- Mic / permission -->
+  <div class="card">
+    <div class="card-title">การอนุญาต</div>
+    <div class="mic-notice">
+      <svg class="mic-notice-icon" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div class="mic-notice-text">
+        <strong>ขอสิทธิ์กล้องและไมค์เพียงครั้งเดียว</strong> — เมื่อกดเริ่มสัมภาษณ์ระบบจะขอสิทธิ์ทั้งกล้องและไมค์พร้อมกัน แล้วเก็บไว้ใช้ตลอด ไม่ต้อง allow ซ้ำทุกครั้งที่กดไมค์อีก
+      </div>
+    </div>
+    <div class="field-hint" style="color:var(--text2)">
+      ต้องเปิดไฟล์ผ่าน <strong style="color:var(--text)">localhost</strong> หรือ <strong style="color:var(--text)">HTTPS</strong> เท่านั้น (webcam + mic ต้องการ secure context)
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startSession()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    เริ่มสัมภาษณ์
+  </button>
+</div>
+
+<!-- ══════ CALL ══════ -->
+<div id="callscreen">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="tb-logo">AI <em>Interview</em></div>
+      <div class="tb-info" id="tb-info">—</div>
+      <div id="voice-provider" style="font-size:11px;color:var(--text3)">Web Speech</div>
+      <div id="ai-provider" style="font-size:11px;color:var(--text3)">Script</div>
+      <div id="simli-provider" style="font-size:11px;color:var(--text3)">Canvas</div>
+    </div>
+    <div class="tb-right">
+      <button class="tpill" id="mute-btn" onclick="toggleMute()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        เสียง
+      </button>
+      <button class="tpill end" onclick="endSession()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        จบ
+      </button>
+    </div>
+  </div>
+
+  <div class="video-row">
+    <!-- LEFT: Talking Head -->
+    <div class="vcell" id="vc-hr">
+      <canvas id="talking-canvas"></canvas>
+      <!-- Simli WebRTC video — แสดงเมื่อ Simli เชื่อมต่อแล้ว -->
+      <video id="simli-video" autoplay playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;"></video>
+      <audio id="simli-audio" autoplay style="display:none"></audio>
+      <div class="speak-ring" id="hr-ring">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="100" fill="none" stroke="#4f8ef7" stroke-width="3" opacity=".65"><animate attributeName="opacity" values=".65;.1;.65" dur="1.4s" repeatCount="indefinite"/></rect></svg>
+      </div>
+      <div class="vc-tag"><div class="tdot live"></div><span>HR</span></div>
+      <div class="vc-overlay">
+        <div><div class="vc-name" id="hr-name-lbl">คุณนภา</div><div class="vc-role">HR Manager</div></div>
+        <div class="vc-wave" id="hr-wave">
+          <div class="wbar" style="background:#4f8ef7"></div><div class="wbar" style="background:#4f8ef7"></div>
+          <div class="wbar" style="background:#4f8ef7"></div><div class="wbar" style="background:#4f8ef7"></div>
+          <div class="wbar" style="background:#4f8ef7"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Webcam -->
+    <div class="vcell" id="vc-cand" style="background:#060810">
+      <video id="webcam-video" autoplay playsinline muted></video>
+      <div id="cam-request">
+        <div class="cam-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">เปิดกล้อง + ไมค์</div>
+          <div style="font-size:12px;color:var(--text2)">ขอสิทธิ์ครั้งเดียว ใช้ตลอดการสัมภาษณ์</div>
+        </div>
+        <button class="cam-btn" onclick="initMediaOnce()">อนุญาต</button>
+      </div>
+      <div id="cam-denied">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/><line x1="1" y1="1" x2="23" y2="23" stroke="var(--red)"/></svg>
+        <div style="font-size:13px;color:var(--text2)">ไม่ได้รับอนุญาตกล้อง/ไมค์</div>
+        <button class="retry-btn" onclick="retryMedia()">ลองใหม่</button>
+      </div>
+      <div class="speak-ring" id="cand-ring">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="100" fill="none" stroke="#34d399" stroke-width="3" opacity=".65"><animate attributeName="opacity" values=".65;.1;.65" dur="1.4s" repeatCount="indefinite"/></rect></svg>
+      </div>
+      <div class="vc-tag" style="left:auto;right:10px"><div class="tdot" style="background:var(--green)"></div><span>ผู้สมัคร</span></div>
+      <div class="vc-overlay">
+        <div><div class="vc-name" id="cand-name-lbl">ผู้สมัคร</div><div class="vc-role" id="cand-role-lbl">—</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <div class="cam-badge"><div style="width:6px;height:6px;border-radius:50%;background:var(--text3)" id="cam-dot"></div><span id="cam-lbl">รอกล้อง</span></div>
+          <div class="vc-wave" id="cand-wave">
+            <div class="wbar" style="background:#34d399"></div><div class="wbar" style="background:#34d399"></div>
+            <div class="wbar" style="background:#34d399"></div><div class="wbar" style="background:#34d399"></div>
+            <div class="wbar" style="background:#34d399"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="statsbar">
+      <span>⏱</span><span class="sval" id="s-time">0:00</span>
+      <span>❓</span><span class="sval" id="s-q">0/8</span>
+      <div class="prog-wrap"><div class="prog-fill" id="s-prog" style="width:0%"></div></div>
+      <span id="s-status" style="color:var(--text2);font-size:11px">กำลังเตรียม...</span>
+    </div>
+    <div class="chat-strip">
+      <div class="msgs" id="msgs"></div>
+      <div class="input-bar">
+        <button class="ibtn mic" id="mic-btn" onclick="toggleMic()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+        <input class="itxt" id="inp" placeholder="พิมพ์คำตอบ หรือกดไมค์พูด…"/>
+        <button class="ibtn send" id="send-btn" onclick="sendReply()">
+          ส่ง
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-left:4px"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ END ══════ -->
+<div id="endscreen">
+  <div class="score-ring">
+    <svg viewBox="0 0 100 100" width="88" height="88">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(79,142,247,.15)" stroke-width="8"/>
+      <circle id="arc" cx="50" cy="50" r="42" fill="none" stroke="url(#ag)" stroke-width="8"
+        stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+        transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1.2s ease"/>
+      <defs><linearGradient id="ag" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4f8ef7"/><stop offset="100%" stop-color="#8b5cf6"/>
+      </linearGradient></defs>
+    </svg>
+    <div class="score-inner"><div class="score-n" id="e-score">—</div><div class="score-u">/100</div></div>
+  </div>
+  <div class="end-title">การสัมภาษณ์เสร็จสิ้น</div>
+  <div class="fb-grid" id="fb-grid"></div>
+  <div class="end-acts">
+    <button class="ebtn" onclick="location.reload()">เริ่มใหม่</button>
+    <button class="ebtn primary" onclick="dlTranscript()">⬇ บทสนทนา</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// QUESTION BANK (ไม่ต้องใช้ API ใดๆ)
+// ══════════════════════════════════════════════════
+const LANGS = {
+  central:   {flag:'🇹🇭',name:'ไทยกลาง',  sub:'กรุงเทพฯ',   hrName:'คุณนภา สิริวรรณ', pitch:1.05,rate:.95,voiceLang:'th-TH'},
+  north:     {flag:'🏔️',name:'เหนือ',     sub:'คำเมือง',    hrName:'พี่มาลี จันทร์แก้ว',pitch:1.1, rate:.93,voiceLang:'th-TH'},
+  northeast: {flag:'🌾',name:'อีสาน',     sub:'ขอนแก่น',   hrName:'พี่แดง สีดาวัลย์', pitch:1.05,rate:.97,voiceLang:'th-TH'},
+  south:     {flag:'🌊',name:'ใต้',        sub:'สุราษฎร์ฯ', hrName:'พี่หนุ่ม ปักษ์ใต้',pitch:.9,  rate:.98,voiceLang:'th-TH'},
+  east:      {flag:'🏭',name:'ตะวันออก',  sub:'ชลบุรี',    hrName:'น้องแพม ชลบุรี',   pitch:1.02,rate:.96,voiceLang:'th-TH'},
+  english:   {flag:'🇺🇸',name:'English',   sub:'International',hrName:'Alex Johnson',   pitch:1.0, rate:.95,voiceLang:'en-US'},
+  chinese:   {flag:'🇨🇳',name:'中文',      sub:'普通话',     hrName:'李雅婷',            pitch:1.0, rate:.95,voiceLang:'zh-CN'},
+  japanese:  {flag:'🇯🇵',name:'日本語',    sub:'標準語',     hrName:'田中 美咲',         pitch:1.05,rate:.95,voiceLang:'ja-JP'},
+  korean:    {flag:'🇰🇷',name:'한국어',    sub:'서울',       hrName:'김민지',            pitch:1.0, rate:.95,voiceLang:'ko-KR'},
+};
+
+const GREET = {
+  central:   (j,c)=>`สวัสดีครับ ยินดีต้อนรับสู่การสัมภาษณ์งานตำแหน่ง${j} ที่${c}นะครับ ช่วยแนะนำตัวเองสั้นๆ ได้เลยครับ`,
+  north:     (j,c)=>`สวัสดีเจ้า ยินดีต้อนรับสู่การสัมภาษณ์งาน${j} ที่${c}เน้อ ขอให้แนะนำตัวเองก่อนได้เลยเจ้า`,
+  northeast: (j,c)=>`สวัสดีเจ้า ยินดีต้อนรับสู่การสัมภาษณ์งาน${j} ที่${c}เด้อ ขอให้แนะนำตัวเองก่อนได้เลยเจ้า`,
+  south:     (j,c)=>`สวัสดีครับ ยินดีต้อนรับสู่การสัมภาษณ์งาน${j} ที่${c}หนิ ขอให้แนะนำตัวเองก่อนนะครับ`,
+  east:      (j,c)=>`สวัสดีครับ ยินดีต้อนรับสู่การสัมภาษณ์ตำแหน่ง${j} ที่${c}ครับ แนะนำตัวและ background สักนิดได้เลยครับ`,
+  english:   (j,c)=>`Hello and welcome to the ${j} interview at ${c}! Could you start by briefly introducing yourself?`,
+  chinese:   (j,c)=>`您好！欢迎参加${c}的${j}面试。请先简单介绍一下您自己吧。`,
+  japanese:  (j,c)=>`こんにちは！${c}の${j}面接へようこそ。まず自己紹介をお願いできますか？`,
+  korean:    (j,c)=>`안녕하세요! ${c}의 ${j} 면접에 오신 것을 환영합니다. 먼저 자기소개를 해주시겠어요?`,
+};
+
+const QUESTIONS = {
+  central:   [
+    j=>`ทำไมถึงสนใจตำแหน่ง${j} และเลือกสมัครที่นี่ครับ`,
+    j=>`ประสบการณ์ที่เกี่ยวข้องกับ${j} ที่ผ่านมามีอะไรบ้างครับ`,
+    ()=>`จุดแข็งที่โดดเด่นที่สุดของคุณคืออะไรครับ`,
+    ()=>`เคยเจอสถานการณ์กดดันในงานไหมครับ แก้ไขยังไง`,
+    ()=>`คาดหวังเรื่องเงินเดือนและสวัสดิการอย่างไรครับ`,
+    ()=>`ถ้าได้รับคัดเลือก สามารถเริ่มงานได้เร็วสุดเมื่อไหร่ครับ`,
+    ()=>`มีคำถามอยากถามเกี่ยวกับบริษัทหรือตำแหน่งนี้ไหมครับ`,
+  ],
+  north:     [
+    j=>`ทำไมเจ้าถึงสนใจงาน${j}อ้ายนี้เน้อ`,
+    j=>`เล่าประสบการณ์เกี่ยวกับ${j}ให้ฟังหน่อยเน้อ`,
+    ()=>`จุดแข็งของเจ้ามีอะไรบ้างเน้อ`,
+    ()=>`เคยเจอปัญหาในงานบ่เจ้า แก้ไขยังไงเน้อ`,
+    ()=>`ค่าตอบแทนที่เจ้าคาดหวังไว้เท่าไหร่เน้อ`,
+    ()=>`ถ้าได้งานเจ้าเริ่มได้เมื่อไหร่เน้อ`,
+    ()=>`มีอะไรอยากถามเกี่ยวกับที่นี่บ่เจ้า`,
+  ],
+  northeast: [
+    j=>`ทำไมเจ้าถึงสนใจงาน${j}นี้เด้อ`,
+    j=>`เล่าประสบการณ์เกี่ยวกับ${j}ให้ฟังแน่เด้อ`,
+    ()=>`เจ้าเก่งด้านไสบ้างเด้อ จุดแข็งคือหยัง`,
+    ()=>`เคยเจอปัญหายุ่งยากในงานบ่ แก้ไขยังไงเด้อ`,
+    ()=>`เงินเดือนคาดหวังเท่าได๋เด้อ`,
+    ()=>`ถ้าได้งานสิเริ่มได้เร็วสุดเมื่อไหร่เด้อ`,
+    ()=>`มีหยังอยากถามเกี่ยวกับบริษัทบ่เด้อ`,
+  ],
+  south:     [
+    j=>`ทำไมถึงสนใจงาน${j}หนิ`,
+    j=>`เล่าประสบการณ์เกี่ยวกับ${j}ให้ฟังหน่อยหนิ`,
+    ()=>`จุดแข็งของคุณมีอะไรบ้างหนิ`,
+    ()=>`เคยเจอปัญหาหนักๆ ในงานไหม แก้ยังไงหนิ`,
+    ()=>`เงินเดือนคาดหวังเท่าไหร่หนิ`,
+    ()=>`ถ้าได้งานจะเริ่มได้เร็วสุดเมื่อไหร่หนิ`,
+    ()=>`มีอะไรอยากถามเกี่ยวกับบริษัทบ้างไหมหนิ`,
+  ],
+  east:      [
+    j=>`ทำไมถึงสนใจ${j}ครับ และ motivation ที่สมัครที่นี่คืออะไร`,
+    j=>`ช่วย walk through ประสบการณ์เกี่ยวกับ${j}หน่อยครับ`,
+    ()=>`strength ของคุณคืออะไร และจะ contribute ให้ทีมยังไงครับ`,
+    ()=>`เคยเจอ challenge ใหญ่ๆ ในงานไหมครับ handle ยังไง`,
+    ()=>`salary expectation อยู่ที่เท่าไหร่ครับ`,
+    ()=>`ถ้า offer แล้ว available เริ่มงานได้เมื่อไหร่ครับ`,
+    ()=>`มี question อะไรอยากถามเกี่ยวกับ role หรือ company ไหมครับ`,
+  ],
+  english:   [
+    j=>`What motivated you to apply for the ${j} position, and why us?`,
+    j=>`Can you walk me through your experience relevant to the ${j} role?`,
+    ()=>`What would you say are your greatest strengths?`,
+    ()=>`Describe a challenging situation at work and how you handled it.`,
+    ()=>`What are your salary expectations?`,
+    ()=>`If offered, when would you be available to start?`,
+    ()=>`Do you have any questions for me about the role or company?`,
+  ],
+  chinese:   [
+    j=>`您为什么对${j}职位感兴趣，为什么选择我们公司？`,
+    j=>`能介绍一下您与${j}相关的工作经验吗？`,
+    ()=>`您认为自己最大的优势是什么？`,
+    ()=>`请描述一次工作中遇到困难并解决的经历。`,
+    ()=>`您期望的薪资待遇是多少？`,
+    ()=>`如果录用，您最早能什么时候入职？`,
+    ()=>`您对我们公司或职位有什么问题吗？`,
+  ],
+  japanese:  [
+    j=>`${j}のポジションに応募された理由を教えてください。`,
+    j=>`${j}に関連するご経験について教えていただけますか？`,
+    ()=>`ご自身の強みは何だとお考えですか？`,
+    ()=>`困難な状況にどう対処されましたか？具体例を教えてください。`,
+    ()=>`給与についてのご希望はありますか？`,
+    ()=>`採用された場合、いつから勤務可能ですか？`,
+    ()=>`会社やポジションについてご質問はありますか？`,
+  ],
+  korean:    [
+    j=>`${j} 포지션에 지원하신 이유가 무엇인가요?`,
+    j=>`${j}와 관련된 경험을 설명해 주시겠어요?`,
+    ()=>`본인의 가장 큰 강점은 무엇이라고 생각하시나요?`,
+    ()=>`업무 중 어려운 상황을 극복한 사례를 말씀해 주세요.`,
+    ()=>`희망하시는 연봉은 어느 정도인가요?`,
+    ()=>`합격 시 언제부터 출근 가능하신가요?`,
+    ()=>`회사나 포지션에 대해 궁금하신 점이 있으신가요?`,
+  ],
+};
+
+const CLOSING = {
+  central:   ()=>`ขอบคุณมากครับที่สละเวลาสัมภาษณ์วันนี้ จะส่งผลให้ทราบภายใน 7 วันทำการนะครับ ขอให้โชคดีครับ`,
+  north:     ()=>`ขอบคุณมากเน้อที่มาสัมภาษณ์วันนี้ จะแจ้งผลให้ทราบภายใน 7 วันเน้อ ขอให้โชคดีเจ้า`,
+  northeast: ()=>`ขอบคุณมากเด้อที่มาสัมภาษณ์วันนี้ สิแจ้งผลให้ทราบภายใน 7 วันเน้อ ขอให้โชคดีเจ้า`,
+  south:     ()=>`ขอบคุณมากนะครับที่มาสัมภาษณ์วันนี้หนิ จะแจ้งผลภายใน 7 วันทำการครับ ขอให้โชคดี`,
+  east:      ()=>`ขอบคุณมากครับที่มา interview วันนี้ จะ follow up ผลภายใน 7 วันนะครับ ขอให้โชคดีครับ`,
+  english:   ()=>`Thank you so much for your time today! We'll be in touch within 7 business days. Best of luck!`,
+  chinese:   ()=>`非常感谢您今天参加面试！我们将在7个工作日内通知您结果。祝您好运！`,
+  japanese:  ()=>`本日はお時間をいただきありがとうございました。7営業日以内にご連絡いたします。頑張ってください！`,
+  korean:    ()=>`오늘 면접에 참여해 주셔서 감사합니다. 7영업일 이내에 결과를 알려드리겠습니다. 행운을 빕니다!`,
+};
+
+// ══════════════════════════════════════════════════
+// ELEVENLABS SETUP HELPERS
+// ══════════════════════════════════════════════════
+
+// ดึงรายการ voices จาก ElevenLabs แล้วใส่ใน datalist
+async function fetchVoices(){
+  const st = document.getElementById('el-status');
+  st.style.display='block';
+  st.style.color='var(--text2)';
+  st.textContent='กำลังดึงรายการ voices...';
+  try{
+    const res = await fetch('/api/voices');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const voices = data.voices || [];
+
+    // เติม datalist
+    const dl = document.getElementById('vlist');
+    dl.innerHTML = '';
+    voices.forEach(v=>{
+      const opt = document.createElement('option');
+      opt.value = v.voice_id;
+      opt.label = v.name;
+      // label เป็น "Name — voice_id" ให้ user เห็นชื่อ
+      opt.textContent = `${v.name} — ${v.voice_id}`;
+      dl.appendChild(opt);
+    });
+
+    // แนะนำ voice ภาษาไทยที่ดีที่สุดจาก library
+    const thaiVoice = voices.find(v=>
+      v.labels?.language==='th' ||
+      v.name.toLowerCase().includes('thai') ||
+      v.name.toLowerCase().includes('prem')
+    );
+
+    st.style.color='var(--green)';
+    st.innerHTML = `พบ ${voices.length} voices ✓ &nbsp;·&nbsp; พิมพ์ชื่อหรือ ID ในช่อง หรือกด ▶ ทดสอบ`
+      + (thaiVoice ? `<br><span style="color:var(--text2)">แนะนำสำหรับไทย: <strong style="color:var(--text)">${thaiVoice.name}</strong> · ID: <code style="color:var(--blue)">${thaiVoice.voice_id}</code></span>` : '');
+
+    // ถ้ายังไม่มี voice ใน central ให้ใส่ค่าแนะนำอัตโนมัติ
+    if(thaiVoice && !document.getElementById('vid-central').value){
+      document.getElementById('vid-central').value = thaiVoice.voice_id;
+      // copy เดียวกันไปทุกภาคไทยที่ยังว่างอยู่
+      ['north','northeast','south','east'].forEach(k=>{
+        const el = document.getElementById('vid-'+k);
+        if(!el.value) el.value = thaiVoice.voice_id;
+      });
+      st.innerHTML += '<br><span style="color:var(--amber)">→ ใส่ voice นี้ให้ทุกภาคไทยอัตโนมัติแล้ว ทดสอบกด ▶ ได้เลยครับ</span>';
+    }
+  } catch(e){
+    st.style.color='var(--red)';
+    st.textContent='Error: ' + e.message + ' — ตรวจสอบ API Key อีกครั้งครับ';
+  }
+}
+
+// ทดสอบเสียงก่อนเริ่มสัมภาษณ์
+const TEST_TEXTS = {
+  central:   'สวัสดีครับ ยินดีต้อนรับสู่การสัมภาษณ์งาน',
+  north:     'สวัสดีเจ้า ยินดีต้อนรับเน้อ',
+  northeast: 'สวัสดีเจ้า ยินดีต้อนรับเด้อ',
+  south:     'สวัสดีครับ ยินดีต้อนรับหนิ',
+  east:      'สวัสดีครับ welcome เลยนะครับ',
+  english:   'Hello, welcome to the interview.',
+  chinese:   '你好，欢迎参加面试。',
+  japanese:  'こんにちは、面接へようこそ。',
+  korean:    '안녕하세요, 면접에 오신 것을 환영합니다.',
+};
+
+async function testVoice(langKey){
+  const voiceId = document.getElementById('vid-'+langKey)?.value.trim();
+  if(!voiceId){ alert('ใส่ Voice ID ก่อนครับ'); return; }
+  const text = TEST_TEXTS[langKey] || 'สวัสดีครับ';
+  try{
+    const res = await fetch('/api/tts',{
+      method:'POST',
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text, voice_id: voiceId, model_id:'eleven_multilingual_v2',
+        voice_settings:{ stability:0.5, similarity_boost:0.75, style:0.3, use_speaker_boost:true }})
+    });
+    if(!res.ok){ const e=await res.json().catch(()=>({})); alert('Error: '+(e?.detail?.message||res.status)); return; }
+    const blob = await res.blob();
+    const audio = new Audio(URL.createObjectURL(blob));
+    audio.play();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+// ══════════════════════════════════════════════════
+// ELEVENLABS CONFIG
+// ══════════════════════════════════════════════════
+const EL = {
+  key: '',
+  voiceIds: {},   // langKey → voice_id
+  model: 'eleven_multilingual_v2',
+};
+
+// ══════════════════════════════════════════════════
+// SIMLI — Real-time WebRTC Talking Avatar
+// ══════════════════════════════════════════════════
+const SIMLI = { faceId: '', pc: null, dc: null, active: false };
+
+function loadSimliConfig(){
+  SIMLI.faceId = document.getElementById('simli-face-id')?.value.trim() || '';
+}
+
+async function initSimli(){
+  if(!SIMLI.faceId) return false;
+  try{
+    // ขอ session token จาก /api/simli-session
+    const res = await fetch('/api/simli-session',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ face_id: SIMLI.faceId })
+    });
+    if(!res.ok) throw new Error('Simli session failed: '+res.status);
+    const { session_token, ice_servers } = await res.json();
+    if(!session_token) throw new Error('No session token');
+
+    // สร้าง WebRTC peer connection
+    const iceServers = ice_servers?.length ? ice_servers : [{ urls:'stun:stun.l.google.com:19302' }];
+    SIMLI.pc = new RTCPeerConnection({ iceServers });
+
+    // รับ video+audio จาก Simli
+    SIMLI.pc.ontrack = e => {
+      const video = document.getElementById('simli-video');
+      const audio = document.getElementById('simli-audio');
+      if(e.track.kind === 'video' && video){
+        if(!video.srcObject) video.srcObject = new MediaStream();
+        video.srcObject.addTrack(e.track);
+        video.style.display = 'block';
+        // ซ่อน canvas fallback
+        const canvas = document.getElementById('talking-canvas');
+        if(canvas) canvas.style.display = 'none';
+        SIMLI.active = true;
+        toast('Simli Avatar เชื่อมต่อแล้ว ✓');
+      }
+      if(e.track.kind === 'audio' && audio){
+        if(!audio.srcObject) audio.srcObject = new MediaStream();
+        audio.srcObject.addTrack(e.track);
+      }
+    };
+
+    // Data channel สำหรับส่ง audio PCM16
+    SIMLI.dc = SIMLI.pc.createDataChannel('audio');
+
+    // เพิ่ม transceiver รับ video+audio
+    SIMLI.pc.addTransceiver('video', { direction:'recvonly' });
+    SIMLI.pc.addTransceiver('audio', { direction:'recvonly' });
+
+    // สร้าง SDP offer
+    const offer = await SIMLI.pc.createOffer();
+    await SIMLI.pc.setLocalDescription(offer);
+
+    // ส่ง offer ไปยัง Simli
+    const sdpRes = await fetch('https://api.simli.ai/startWebRTCSession/sdp', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ sdp: offer.sdp, session_token, type: offer.type })
+    });
+    if(!sdpRes.ok) throw new Error('SDP exchange failed');
+    const { sdp: answerSdp, type: answerType } = await sdpRes.json();
+    await SIMLI.pc.setRemoteDescription({ type: answerType || 'answer', sdp: answerSdp });
+
+    return true;
+  } catch(e){
+    console.warn('Simli init error:', e.message);
+    toast('Simli: '+e.message+' — ใช้ Canvas แทน');
+    return false;
+  }
+}
+
+// ส่ง audio PCM16 ไปยัง Simli เพื่อ lip sync
+async function simliSendAudio(audioBuffer){
+  if(!SIMLI.active || !SIMLI.dc || SIMLI.dc.readyState !== 'open') return;
+  // แปลง AudioBuffer → PCM16 16kHz
+  const ctx = new OfflineAudioContext(1, audioBuffer.length, 16000);
+  const src = ctx.createBufferSource();
+  src.buffer = audioBuffer;
+  src.connect(ctx.destination);
+  src.start();
+  const resampled = await ctx.startRendering();
+  const pcm = new Int16Array(resampled.length);
+  const data = resampled.getChannelData(0);
+  for(let i=0; i<data.length; i++){
+    pcm[i] = Math.max(-32768, Math.min(32767, data[i] * 32768));
+  }
+  // ส่งเป็น chunks 6000 bytes
+  const bytes = new Uint8Array(pcm.buffer);
+  for(let i=0; i<bytes.length; i+=6000){
+    SIMLI.dc.send(bytes.slice(i, i+6000));
+  }
+}
+
+function closeSimli(){
+  SIMLI.pc?.close();
+  SIMLI.pc = null; SIMLI.dc = null; SIMLI.active = false;
+  const video = document.getElementById('simli-video');
+  if(video){ video.style.display='none'; video.srcObject=null; }
+}
+
+function loadELConfig(){
+  EL.key = 'proxy'; // key อยู่ใน server env แล้ว
+  const keys = ['central','north','northeast','south','east','english','chinese','japanese','korean'];
+  keys.forEach(k=>{
+    const v = document.getElementById('vid-'+k)?.value.trim();
+    if(v) EL.voiceIds[k]=v;
+  });
+}
+let selLang = 'central';
+let hrPhotoDataURL = null;
+
+(function buildLangGrid(){
+  const g = document.getElementById('lang-grid');
+  Object.entries(LANGS).forEach(([key,l])=>{
+    const d = document.createElement('div');
+    d.className = 'lang-btn'+(key==='central'?' sel':'');
+    d.innerHTML = `<span class="lang-flag">${l.flag}</span><span class="lang-name">${l.name}</span><span class="lang-sub">${l.sub}</span>`;
+    d.onclick = ()=>{ document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('sel')); d.classList.add('sel'); selLang=key; };
+    g.appendChild(d);
+  });
+})();
+
+function onPhotoSelect(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    hrPhotoDataURL = e.target.result;
+    const prev = document.getElementById('photo-preview');
+    prev.src = hrPhotoDataURL;
+    prev.style.display = 'block';
+    document.getElementById('photo-label').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let CFG = { lang:null, langKey:'central', job:'', company:'', maxQ:8 };
+let ST  = {
+  qIdx:0, qCount:0, isMuted:false, hrTalking:false,
+  timer:null, startTime:null, transcript:[],
+  mediaStream:null, audioCtx:null, audioLoop:null,
+  recognition:null, isRecording:false,
+  claudeMsgs: [],
+};
+const synth = window.speechSynthesis;
+
+// ══════════════════════════════════════════════════
+// MEDIA — request ONCE, reuse forever
+// ══════════════════════════════════════════════════
+async function initMediaOnce(){
+  document.getElementById('cam-request').style.display = 'none';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{ width:{ideal:1280}, height:{ideal:720}, facingMode:'user' },
+      audio:true
+    });
+    ST.mediaStream = stream;
+    const vid = document.getElementById('webcam-video');
+    vid.srcObject = stream;
+    vid.style.display = 'block';
+    document.getElementById('cam-dot').style.background = 'var(--green)';
+    document.getElementById('cam-lbl').textContent = 'กล้องเปิด';
+    toast('กล้อง + ไมค์พร้อมแล้ว ✓');
+    startAudioMeter(stream);
+    // Auto-start speech recognition using same stream (no re-prompt needed)
+    initSpeechRecognition();
+  } catch(e){
+    document.getElementById('cam-denied').style.display = 'flex';
+    document.getElementById('cam-dot').style.background = 'var(--red)';
+    document.getElementById('cam-lbl').textContent = 'ไม่มีสิทธิ์';
+    toast('ไม่ได้รับอนุญาต: '+e.message);
+  }
+}
+function retryMedia(){
+  document.getElementById('cam-denied').style.display='none';
+  document.getElementById('cam-request').style.display='flex';
+}
+
+function startAudioMeter(stream){
+  try{
+    ST.audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const src = ST.audioCtx.createMediaStreamSource(stream);
+    const an = ST.audioCtx.createAnalyser();
+    an.fftSize=256; an.smoothingTimeConstant=.8;
+    src.connect(an);
+    const buf=new Uint8Array(an.frequencyBinCount);
+    ST.audioLoop=setInterval(()=>{
+      if(ST.hrTalking||ST.isRecording) return;
+      an.getByteFrequencyData(buf);
+      const avg=buf.slice(0,64).reduce((a,b)=>a+b,0)/64;
+      const on=avg>18;
+      document.getElementById('cand-wave').className='vc-wave'+(on?' on':'');
+      document.getElementById('cand-ring').className='speak-ring'+(on?' on':'');
+    },80);
+  }catch(e){}
+}
+
+// SpeechRecognition — init once, reuse (no re-prompt)
+// ══════════════════════════════════════════════════
+// AUTO MIC — Voice Activity Detection (VAD)
+// เปิดอัตโนมัติเมื่อ HR พูดจบ, ปิดเมื่อ silence
+// ไม่ต้องกดปุ่มเลย
+// ══════════════════════════════════════════════════
+let _sr = null;
+let _vadAnalyser = null;
+let _vadBuf = null;
+let _silenceTimer = null;
+let _autoMicEnabled = true;   // เปิด auto mic ตลอด
+let _silenceMs = 1800;        // หยุดฟังหลังเงียบ 1.8s
+let _vadThreshold = 22;       // ระดับเสียงขั้นต่ำ
+let _accumText = '';           // สะสมข้อความระหว่างฟัง
+
+function initSpeechRecognition(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ toast('Browser ไม่รองรับ Speech Recognition — ใช้ Chrome ครับ'); return; }
+
+  function makeRecognition(){
+    const r = new SR();
+    r.lang = CFG.lang?.voiceLang || 'th-TH';
+    r.continuous = true;       // ฟังต่อเนื่องไม่ตัด
+    r.interimResults = true;   // แสดง interim ระหว่างพูด
+
+    r.onresult = e=>{
+      let interim = '', final = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        const t = e.results[i][0].transcript;
+        if(e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      const inp = document.getElementById('inp');
+      inp.value = (_accumText + final + interim).trim();
+      if(final) _accumText += final;
+      resetSilenceTimer();
+    };
+
+    r.onspeechend = ()=>{ resetSilenceTimer(400); };
+
+    r.onend = ()=>{
+      ST.isRecording = false;
+      updateMicUI(false);
+      // ถ้า auto mode และ HR ไม่ได้พูด → restart ฟังต่อ
+      if(_autoMicEnabled && !ST.hrTalking && !ST.isMuted){
+        setTimeout(startAutoListen, 300);
+      }
+    };
+
+    r.onerror = e=>{
+      if(['aborted','no-speech'].includes(e.error)) return;
+      console.warn('SR error:', e.error);
+    };
+    return r;
+  }
+
+  _sr = makeRecognition();
+  // เก็บ factory ไว้ใช้ restart
+  _sr._make = makeRecognition;
+}
+
+function resetSilenceTimer(ms){
+  clearTimeout(_silenceTimer);
+  _silenceTimer = setTimeout(()=>{
+    // เงียบนานพอ — ส่งคำตอบ
+    const txt = document.getElementById('inp').value.trim();
+    if(txt){
+      _accumText = '';
+      stopAutoListen();
+      sendReply();
+    }
+  }, ms || _silenceMs);
+}
+
+function startAutoListen(){
+  if(!_sr || ST.hrTalking || ST.isRecording || ST.isMuted) return;
+  try{
+    _accumText = '';
+    document.getElementById('inp').value = '';
+    _sr = _sr._make();  // สร้างใหม่ทุกครั้ง (browser requirement)
+    _sr.start();
+    ST.isRecording = true;
+    updateMicUI(true);
+  } catch(e){ console.warn('SR start:', e.message); }
+}
+
+function stopAutoListen(){
+  clearTimeout(_silenceTimer);
+  if(_sr && ST.isRecording){
+    try{ _sr.abort(); } catch(e){}
+  }
+  ST.isRecording = false;
+  updateMicUI(false);
+}
+
+function updateMicUI(listening){
+  const btn = document.getElementById('mic-btn');
+  const wave = document.getElementById('cand-wave');
+  const ring = document.getElementById('cand-ring');
+  if(listening){
+    btn?.classList.add('rec');
+    setStatus('กำลังฟัง… พูดได้เลย');
+  } else {
+    btn?.classList.remove('rec');
+  }
+}
+
+// กดปุ่มไมค์ = toggle manual override
+function toggleMic(){
+  if(!_sr){ toast('กด "อนุญาต" กล้อง/ไมค์ก่อนครับ'); return; }
+  if(ST.isRecording){
+    stopAutoListen();
+    toast('หยุดฟัง');
+  } else {
+    startAutoListen();
+    toast('กำลังฟัง… พูดได้เลย');
+  }
+}
+
+// เรียกหลัง HR พูดจบ → เปิดไมค์อัตโนมัติ
+function autoMicAfterHR(){
+  if(!_autoMicEnabled || ST.isMuted) return;
+  setTimeout(startAutoListen, 500);
+}
+
+// ══════════════════════════════════════════════════
+// ANTHROPIC API — HR ตอบโต้ dynamic ได้เลย
+// ══════════════════════════════════════════════════
+const ANTHROPIC = { key: '' };
+
+function loadAnthropicKey(){
+  ANTHROPIC.key = 'proxy'; // key อยู่ใน server env แล้ว
+}
+
+async function callClaude(userMsg){
+  if(!ANTHROPIC.key) return null;  // fallback to question bank
+
+  const sys = (CFG.lang?.system || '') +
+    `\nตำแหน่ง: ${CFG.job} | บริษัท: ${CFG.company} | คำถามที่ ${ST.qCount}/${CFG.maxQ}` +
+    (ST.qCount >= CFG.maxQ ? '\n[นี่คือการแลกเปลี่ยนสุดท้าย กรุณาสรุปและกล่าวลา]' : '');
+
+  ST.claudeMsgs = ST.claudeMsgs || [];
+  if(userMsg) ST.claudeMsgs.push({ role:'user', content: userMsg });
+
+  try{
+    const res = await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:400,
+        system: sys,
+        messages: ST.claudeMsgs
+      })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const d = await res.json();
+    const reply = d.content?.[0]?.text || '';
+    ST.claudeMsgs.push({ role:'assistant', content: reply });
+    return reply;
+  } catch(e){
+    console.warn('Claude error:', e.message);
+    return null;
+  }
+}
+
+// ══════════════════════════════════════════════════
+// TALKING HEAD — Canvas lip sync
+// ══════════════════════════════════════════════════
+let _talkCanvas, _talkCtx, _hrImg=null;
+let _mouthOpen=0, _mouthTarget=0, _rafId=null;
+let _lipTimer=null;
+
+function initTalkingHead(){
+  _talkCanvas = document.getElementById('talking-canvas');
+  _talkCtx    = _talkCanvas.getContext('2d');
+
+  // Resize canvas to fill cell
+  const cell = document.getElementById('vc-hr');
+  const resize=()=>{ _talkCanvas.width=cell.clientWidth; _talkCanvas.height=cell.clientHeight; drawFrame(); };
+  new ResizeObserver(resize).observe(cell);
+  resize();
+
+  if(hrPhotoDataURL){
+    const img=new Image();
+    img.onload=()=>{ _hrImg=img; drawFrame(); };
+    img.src=hrPhotoDataURL;
+  }
+  rafLoop();
+}
+
+function rafLoop(){
+  _rafId=requestAnimationFrame(rafLoop);
+  // Smooth mouth interpolation
+  _mouthOpen += (_mouthTarget-_mouthOpen)*0.25;
+  drawFrame();
+}
+
+function drawFrame(){
+  if(!_talkCtx) return;
+  const W=_talkCanvas.width, H=_talkCanvas.height;
+  _talkCtx.clearRect(0,0,W,H);
+
+  if(_hrImg){
+    // Draw photo, cover-fit
+    const iR=_hrImg.width/_hrImg.height, cR=W/H;
+    let sw,sh,sx,sy;
+    if(iR>cR){ sh=_hrImg.height; sw=sh*cR; sx=(_hrImg.width-sw)/2; sy=0; }
+    else{ sw=_hrImg.width; sh=sw/cR; sx=0; sy=(_hrImg.height-sh)/2; }
+    _talkCtx.drawImage(_hrImg,sx,sy,sw,sh,0,0,W,H);
+
+    // Mouth overlay — estimate face position at lower-center
+    const fx=W/2, fy=H*0.68;
+    const mw=W*0.09, mh=(_mouthOpen*H*0.04)+2;
+
+    // Darken mouth area slightly when open
+    if(_mouthOpen>0.05){
+      _talkCtx.save();
+      _talkCtx.globalAlpha=_mouthOpen*0.55;
+      _talkCtx.fillStyle='#000';
+      _talkCtx.beginPath();
+      _talkCtx.ellipse(fx,fy,mw,Math.max(mh,2),0,0,Math.PI*2);
+      _talkCtx.fill();
+      _talkCtx.restore();
+
+      // Inner mouth
+      _talkCtx.save();
+      _talkCtx.globalAlpha=_mouthOpen*0.7;
+      _talkCtx.fillStyle='#1a0005';
+      _talkCtx.beginPath();
+      _talkCtx.ellipse(fx,fy,mw*0.75,Math.max(mh*0.8,1),0,0,Math.PI*2);
+      _talkCtx.fill();
+      _talkCtx.restore();
+    }
+  } else {
+    drawSVGFallback(W,H);
+  }
+}
+
+function drawSVGFallback(W,H){
+  const ctx=_talkCtx;
+  // Background
+  const g=ctx.createRadialGradient(W/2,H*.3,0,W/2,H*.3,H*.7);
+  g.addColorStop(0,'#1a2a4a'); g.addColorStop(1,'#060c1e');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  const cx=W/2, scale=H/420;
+  // Body suit
+  ctx.fillStyle='#1e293b';
+  ctx.beginPath(); ctx.ellipse(cx,H*1.05,110*scale,70*scale,0,0,Math.PI*2); ctx.fill();
+  ctx.fillRect(cx-88*scale,H*.78,176*scale,100*scale);
+  // Head
+  ctx.fillStyle='#f9c4a0';
+  ctx.beginPath(); ctx.ellipse(cx,H*.54,60*scale,62*scale,0,0,Math.PI*2); ctx.fill();
+  // Hair
+  ctx.fillStyle='#1a0a00';
+  ctx.beginPath(); ctx.ellipse(cx,H*.4,54*scale,24*scale,0,0,Math.PI); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx,H*.54,61*scale,45*scale,0,Math.PI,Math.PI*2); ctx.fill();
+  // Eyes
+  [[cx-14*scale,H*.51],[cx+14*scale,H*.51]].forEach(([ex,ey])=>{
+    ctx.fillStyle='white'; ctx.beginPath(); ctx.ellipse(ex,ey,11*scale,12*scale,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1a1005'; ctx.beginPath(); ctx.ellipse(ex,ey+2*scale,7*scale,7*scale,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='white'; ctx.beginPath(); ctx.ellipse(ex+2*scale,ey-1*scale,2*scale,2*scale,0,0,Math.PI*2); ctx.fill();
+  });
+  // Mouth
+  const mOpen=_mouthOpen;
+  const mx=cx, my=H*.64;
+  const mw=14*scale, mh=Math.max(mOpen*18*scale,2);
+  ctx.fillStyle='#c04060';
+  ctx.beginPath(); ctx.ellipse(mx,my,mw,4*scale,0,0,Math.PI*2); ctx.fill();
+  if(mOpen>0.05){
+    ctx.fillStyle='#1a0005';
+    ctx.beginPath(); ctx.ellipse(mx,my+2*scale,mw*.75,mh,0,0,Math.PI*2); ctx.fill();
+  }
+  // HR badge
+  ctx.fillStyle='rgba(30,64,175,.85)'; roundRect(ctx,cx-50*scale,H*.85,100*scale,22*scale,4*scale);
+  ctx.fillStyle='white'; ctx.font=`bold ${9*scale}px Inter,sans-serif`; ctx.textAlign='center';
+  ctx.fillText('HR MANAGER',cx,H*.85+15*scale);
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();ctx.fill();
+}
+
+// Animate mouth while speaking
+function startLipSync(){
+  _mouthTarget=0;
+  _lipTimer=setInterval(()=>{
+    _mouthTarget=Math.random()>.4 ? Math.random()*.9+.1 : 0;
+  },140);
+}
+function stopLipSync(){
+  clearInterval(_lipTimer);
+  _mouthTarget=0;
+}
+
+// ══════════════════════════════════════════════════
+// SESSION START
+// ══════════════════════════════════════════════════
+function startSession(){
+  loadELConfig();
+  loadAnthropicKey();
+  loadSimliConfig();
+  CFG.langKey = selLang;
+  CFG.lang    = LANGS[selLang];
+  CFG.job     = document.getElementById('job').value.trim()||'Software Engineer';
+  CFG.company = document.getElementById('company').value.trim()||'บริษัท';
+  CFG.maxQ    = parseInt(document.getElementById('qcount').value);
+
+  document.getElementById('hr-name-lbl').textContent  = CFG.lang.hrName;
+  document.getElementById('cand-role-lbl').textContent = `${CFG.job} @ ${CFG.company}`;
+  document.getElementById('tb-info').textContent       = `${CFG.job} @ ${CFG.company}`;
+  document.getElementById('s-q').textContent           = `0/${CFG.maxQ}`;
+
+  // Show which voice provider is active
+  const hasEL = EL.key && EL.voiceIds[selLang];
+  document.getElementById('voice-provider').textContent = hasEL ? '🎙 ElevenLabs' : '🔊 Web Speech';
+  document.getElementById('voice-provider').style.color = hasEL ? 'var(--green)' : 'var(--text3)';
+  const hasSimli = !!SIMLI.faceId;
+  document.getElementById('simli-provider').textContent = hasSimli ? '🎭 Simli' : '🖼 Canvas';
+  document.getElementById('simli-provider').style.color = hasSimli ? 'var(--green)' : 'var(--text3)';
+  const hasClaude = !!ANTHROPIC.key;
+  document.getElementById('ai-provider').textContent = hasClaude ? '🧠 Claude AI' : '📋 Script';
+  document.getElementById('ai-provider').style.color = hasClaude ? 'var(--blue)' : 'var(--text3)';
+
+  document.getElementById('setup').style.display='none';
+  document.getElementById('callscreen').style.display='flex';
+
+  initTalkingHead();
+  // เริ่ม Simli ถ้ามี Face ID
+  if(SIMLI.faceId){
+    setStatus('กำลังเชื่อมต่อ Simli...');
+    initSimli().then(ok=>{
+      if(!ok) toast('ใช้ Canvas Avatar แทน');
+    });
+  }
+  ST.startTime=Date.now();
+  ST.timer=setInterval(tickTimer,1000);
+  beginInterview();
+}
+
+function tickTimer(){
+  const s=Math.floor((Date.now()-ST.startTime)/1000);
+  document.getElementById('s-time').textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════════════
+// INTERVIEW FLOW
+// ══════════════════════════════════════════════════
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function beginInterview(){
+  ST.claudeMsgs = [];  // reset conversation
+  setStatus('HR กำลังทักทาย…');
+  await wait(600); addTyping();
+
+  let q = null;
+  if(ANTHROPIC.key){
+    // ให้ Claude ทักทายและเริ่มสัมภาษณ์
+    q = await callClaude(null);
+  }
+  if(!q){
+    await wait(900);
+    q = (GREET[CFG.langKey]||GREET.central)(CFG.job,CFG.company);
+  }
+
+  removeTyping();
+  ST.transcript.push({role:'HR',text:q});
+  addMsg('l',q,CFG.lang.hrName,'#4f8ef7');
+  ST.qCount=1; updProg();
+  await speakHR(q);
+  enableInput();
+}
+
+async function nextQ(answer){
+  disableInput();
+  stopAutoListen();
+  ST.transcript.push({role:'ผู้สมัคร',text:answer});
+  const isLast=ST.qCount>=CFG.maxQ;
+  setStatus(isLast?'HR กำลังปิดสัมภาษณ์…':'HR กำลังคิด…');
+  await wait(400); addTyping(); 
+
+  let q = null;
+
+  // ── ลอง Claude ก่อน (dynamic + ตอบโต้ได้) ──
+  if(ANTHROPIC.key){
+    q = await callClaude(answer);
+  }
+
+  // ── fallback: question bank ──
+  if(!q){
+    await wait(700);
+    if(isLast){ q=(CLOSING[CFG.langKey]||CLOSING.central)(); }
+    else{
+      const qs=QUESTIONS[CFG.langKey]||QUESTIONS.central;
+      q=qs[Math.min(ST.qIdx,qs.length-1)](CFG.job,CFG.company);
+      ST.qIdx++;
+    }
+  }
+
+  removeTyping();
+  ST.transcript.push({role:'HR',text:q});
+  addMsg('l',q,CFG.lang.hrName,'#4f8ef7');
+  if(!isLast){ST.qCount++;updProg();}
+  await speakHR(q);
+  if(isLast) setTimeout(finishSession,1500);
+  else enableInput();
+}
+
+// ══════════════════════════════════════════════════
+// SPEECH — ElevenLabs first, Web Speech fallback
+// ══════════════════════════════════════════════════
+let _kaTimer=null;
+
+async function speakHR(text){
+  if(ST.isMuted){ setHRTalking(false); return; }
+  setHRTalking(true);
+  startLipSync();
+
+  // ── Try ElevenLabs ──
+  const voiceId = EL.key && EL.voiceIds[CFG.langKey];
+  if(voiceId){
+    const ok = await speakElevenLabs(text, voiceId);
+    if(ok){ stopLipSync(); setHRTalking(false); return; }
+    toast('ElevenLabs error — fallback ไปใช้ Web Speech');
+  }
+
+  // ── Fallback: Web Speech API (Chrome keepAlive fix) ──
+  await speakWebSpeech(text);
+  stopLipSync();
+  setHRTalking(false);
+}
+
+async function speakElevenLabs(text, voiceId){
+  try{
+    const res = await fetch('/api/tts', {
+      method:'POST',
+      headers:{
+                'Content-Type':'application/json',
+        'Accept':'audio/mpeg',
+      },
+      body: JSON.stringify({
+        text,
+        voice_id: voiceId,
+        model_id: EL.model,
+        voice_settings:{ stability:0.5, similarity_boost:0.75, style:0.3, use_speaker_boost:true }
+      })
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      console.warn('ElevenLabs:', err?.detail?.message||res.status);
+      return false;
+    }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    await new Promise((resolve, reject)=>{
+      const audio = new Audio(url);
+      audio.onended  = ()=>{ URL.revokeObjectURL(url); resolve(); };
+      audio.onerror  = ()=>{ URL.revokeObjectURL(url); reject(); };
+      // Animate mouth while audio plays
+      audio.onplay   = ()=>{ startLipSync(); };
+      audio.onpause  = ()=> stopLipSync();
+      // ส่ง audio ไปยัง Simli ถ้าเชื่อมต่ออยู่
+      if(SIMLI.active){
+        const actx = new AudioContext();
+        const abuf = await blob.arrayBuffer();
+        actx.decodeAudioData(abuf).then(buf=>simliSendAudio(buf)).catch(()=>{});
+      }
+      audio.play().catch(reject);
+    });
+    return true;
+  } catch(e){
+    console.warn('ElevenLabs fetch error:', e);
+    return false;
+  }
+}
+
+function splitChunks(text,max=160){
+  if(text.length<=max) return [text];
+  const out=[],sents=text.split(/(?<=[.!?。ๆ\n])\s*/u);
+  let cur='';
+  sents.forEach(s=>{ if((cur+s).length>max&&cur){out.push(cur.trim());cur=s;}else cur+=(cur?' ':'')+s; });
+  if(cur.trim()) out.push(cur.trim());
+  return out.filter(Boolean);
+}
+
+function speakWebSpeech(text){
+  return new Promise(resolve=>{
+    synth.cancel();
+    const chunks=splitChunks(text); let i=0;
+    _kaTimer=setInterval(()=>{ if(synth.speaking&&!synth.paused){synth.pause();setTimeout(()=>synth.resume(),50);} },9000);
+    function next(){
+      if(i>=chunks.length){ clearInterval(_kaTimer); resolve(); return; }
+      const u=new SpeechSynthesisUtterance(chunks[i]);
+      u.lang=CFG.lang.voiceLang; u.rate=CFG.lang.rate; u.pitch=CFG.lang.pitch;
+      u.onend=()=>{i++;next();};
+      u.onerror=e=>{
+        if(e.error==='interrupted'){i++;next();return;}
+        clearInterval(_kaTimer); resolve();
+      };
+      synth.speak(u);
+    }
+    next();
+  });
+}
+
+function setHRTalking(on){
+  ST.hrTalking=on;
+  document.getElementById('hr-ring').className='speak-ring'+(on?' on':'');
+  document.getElementById('hr-wave').className='vc-wave'+(on?' on':'');
+  setStatus(on?'HR กำลังพูด…':'กำลังฟัง…');
+  if(on){
+    // HR เริ่มพูด → หยุดฟังผู้สมัครทันที
+    stopAutoListen();
+  } else {
+    // HR พูดจบ → เปิดไมค์อัตโนมัติ
+    autoMicAfterHR();
+  }
+}
+
+function toggleMute(){
+  ST.isMuted=!ST.isMuted;
+  const b=document.getElementById('mute-btn');
+  b.className='tpill'+(ST.isMuted?' muted':'');
+  b.innerHTML=ST.isMuted
+    ?`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> ปิดเสียง`
+    :`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> เสียง`;
+  if(ST.isMuted){synth.cancel();clearInterval(_kaTimer);stopLipSync();setHRTalking(false);}
+  toast(ST.isMuted?'ปิดเสียง':'เปิดเสียง');
+}
+
+// ══════════════════════════════════════════════════
+// SEND REPLY
+// ══════════════════════════════════════════════════
+async function sendReply(){
+  const inp=document.getElementById('inp');
+  const txt=inp.value.trim(); if(!txt) return;
+  inp.value=''; _accumText='';
+  stopAutoListen();
+  synth.cancel(); clearInterval(_kaTimer); stopLipSync(); setHRTalking(false);
+  addMsg('r',txt,'คุณ','#34d399');
+  await nextQ(txt);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('inp').addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendReply();}
+  });
+});
+
+// ══════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════
+function addMsg(side,text,name,col){
+  const c=document.getElementById('msgs');
+  const d=document.createElement('div');
+  d.className=`msg ${side}`;
+  const ini=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  d.innerHTML=`<div class="mav" style="background:${col}18;border-color:${col}33;color:${col}">${ini}</div>
+    <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;${side==='r'?'text-align:right':''}">${name}</div>
+    <div class="mbubble">${text}</div></div>`;
+  c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+
+let _typEl=null;
+function addTyping(){
+  const c=document.getElementById('msgs');
+  _typEl=document.createElement('div');
+  _typEl.className='msg l'; _typEl.id='__typ';
+  _typEl.innerHTML=`<div class="mav" style="background:var(--bg4)">···</div><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  c.appendChild(_typEl); c.scrollTop=c.scrollHeight;
+}
+function removeTyping(){document.getElementById('__typ')?.remove();}
+
+function updProg(){
+  const p=Math.min((ST.qCount/CFG.maxQ)*100,100);
+  document.getElementById('s-prog').style.width=p+'%';
+  document.getElementById('s-q').textContent=`${ST.qCount}/${CFG.maxQ}`;
+}
+function setStatus(t){document.getElementById('s-status').textContent=t;}
+function disableInput(){document.getElementById('send-btn').disabled=true;document.getElementById('inp').disabled=true;}
+function enableInput(){document.getElementById('send-btn').disabled=false;const i=document.getElementById('inp');i.disabled=false;i.focus();}
+
+// ══════════════════════════════════════════════════
+// END SESSION
+// ══════════════════════════════════════════════════
+function endSession(){if(confirm('จบการสัมภาษณ์?')){ closeSimli(); finishSession(); }}
+
+async function finishSession(){
+  synth.cancel(); clearInterval(_kaTimer); clearInterval(ST.timer); clearInterval(ST.audioLoop);
+  stopLipSync(); cancelAnimationFrame(_rafId);
+  setHRTalking(false);
+  ST.mediaStream?.getTracks().forEach(t=>t.stop());
+  if(ST.audioCtx) ST.audioCtx.close().catch(()=>{});
+
+  document.getElementById('callscreen').style.display='none';
+  document.getElementById('endscreen').style.display='flex';
+
+  const score=Math.floor(Math.random()*22)+72;
+  document.getElementById('e-score').textContent=score;
+  setTimeout(()=>{document.getElementById('arc').style.strokeDashoffset=264-(score/100)*264;},200);
+
+  const userAnswers=ST.transcript.filter(m=>m.role==='ผู้สมัคร');
+  const totalWords=userAnswers.reduce((a,m)=>a+(m.text||'').split(/\s+/).length,0);
+  const avg=userAnswers.length?Math.round(totalWords/userAnswers.length):0;
+  const grid=document.getElementById('fb-grid');
+  const fbs=[
+    avg>=30?['var(--green)','✓','จุดเด่น','ให้คำตอบที่มีรายละเอียดดี แสดงถึงประสบการณ์ที่ชัดเจน']:['var(--amber)','↑','พัฒนาได้','ควรขยายความคำตอบให้มีรายละเอียดมากขึ้น'],
+    userAnswers.length>=CFG.maxQ-1?['var(--green)','✓','จุดเด่น','ตอบครบทุกคำถาม แสดงถึงความพร้อมในการสัมภาษณ์']:['var(--amber)','↑','พัฒนาได้','ควรเตรียมตัวตอบให้ครบทุกข้อ'],
+    ['var(--blue)','★','สรุป',`ตอบ ${userAnswers.length} คำถาม เฉลี่ย ${avg} คำต่อคำตอบ`],
+  ];
+  grid.innerHTML=fbs.map(([c,ic,lb,tx])=>`<div class="fb-item"><div style="color:${c};font-size:16px;flex-shrink:0">${ic}</div><div><strong style="color:var(--text)">${lb}:</strong> ${tx}</div></div>`).join('');
+}
+
+function dlTranscript(){
+  const lines=ST.transcript.map(m=>`[${m.role}]\n${m.text}`).join('\n\n');
+  const blob=new Blob([`AI Interview Transcript\n${CFG.job} @ ${CFG.company}\n${'='.repeat(50)}\n\n${lines}`],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='interview.txt';a.click();
+}
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
