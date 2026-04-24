@@ -878,8 +878,9 @@ async function initMediaOnce(){
   }
 }
 function retryMedia(){
-  document.getElementById('cam-denied').style.display='none';
-  document.getElementById('cam-request').style.display='flex';
+  const denied = document.getElementById('cam-denied');
+  if(denied) denied.style.display='none';
+  initMediaOnce();
 }
 
 function startAudioMeter(stream){
@@ -1027,17 +1028,64 @@ function autoMicAfterHR(){
 }
 
 // ══════════════════════════════════════════════════
-// ANTHROPIC API — HR ตอบโต้ dynamic ได้เลย
+// ══════════════════════════════════════════════════
+// AI API — Gemini (primary) + Claude (fallback)
 // ══════════════════════════════════════════════════
 const ANTHROPIC = { key: '' };
+const GEMINI = { key: '' };
 
 function loadAnthropicKey(){
-  ANTHROPIC.key = 'proxy'; // key อยู่ใน server env แล้ว
+  ANTHROPIC.key = 'proxy'; // Anthropic key อยู่ใน server env
+  GEMINI.key = 'proxy';    // Gemini key อยู่ใน server env
 }
 
+// เรียก AI — ลอง Gemini ก่อน ถ้าไม่ได้ค่อย fallback Claude
 async function callClaude(userMsg){
-  if(!ANTHROPIC.key) return null;  // fallback to question bank
+  // ลอง Gemini ก่อน
+  const geminiReply = await callGemini(userMsg);
+  if(geminiReply) return geminiReply;
+  // fallback Claude
+  return await callClaudeAPI(userMsg);
+}
 
+async function callGemini(userMsg){
+  const sys = (CFG.lang?.system || '') +
+    `\nตำแหน่ง: ${CFG.job} | บริษัท: ${CFG.company} | คำถามที่ ${ST.qCount}/${CFG.maxQ}` +
+    (ST.qCount >= CFG.maxQ ? '\n[นี่คือการแลกเปลี่ยนสุดท้าย กรุณาสรุปและกล่าวลา]' : '');
+
+  ST.claudeMsgs = ST.claudeMsgs || [];
+  if(userMsg) ST.claudeMsgs.push({ role:'user', content: userMsg });
+
+  // แปลง message format สำหรับ Gemini
+  const geminiHistory = ST.claudeMsgs.slice(0,-1).map(m=>({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+  const lastMsg = userMsg || 'เริ่มการสัมภาษณ์ ทักทายผู้สมัครและถามคำถามแรก';
+
+  try{
+    const res = await fetch('/api/gemini',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        system: sys,
+        history: geminiHistory,
+        message: lastMsg
+      })
+    });
+    if(!res.ok) throw new Error('Gemini HTTP '+res.status);
+    const d = await res.json();
+    const reply = d.text || '';
+    if(!reply) throw new Error('empty reply');
+    ST.claudeMsgs.push({ role:'assistant', content: reply });
+    return reply;
+  } catch(e){
+    console.warn('Gemini error:', e.message);
+    return null;
+  }
+}
+
+async function callClaudeAPI(userMsg){
   const sys = (CFG.lang?.system || '') +
     `\nตำแหน่ง: ${CFG.job} | บริษัท: ${CFG.company} | คำถามที่ ${ST.qCount}/${CFG.maxQ}` +
     (ST.qCount >= CFG.maxQ ? '\n[นี่คือการแลกเปลี่ยนสุดท้าย กรุณาสรุปและกล่าวลา]' : '');
@@ -1047,15 +1095,13 @@ async function callClaude(userMsg){
 
   try{
     const res = await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:400,
         system: sys,
         messages: ST.claudeMsgs
       })
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     const d = await res.json();
-    const reply = d.content?.[0]?.text || '';
+    const reply = d.text || '';
     ST.claudeMsgs.push({ role:'assistant', content: reply });
     return reply;
   } catch(e){
@@ -1222,7 +1268,7 @@ function startSession(){
   document.getElementById('simli-provider').textContent = hasSimli ? '🎭 Simli' : '🖼 Canvas';
   document.getElementById('simli-provider').style.color = hasSimli ? 'var(--green)' : 'var(--text3)';
   const hasClaude = !!ANTHROPIC.key;
-  document.getElementById('ai-provider').textContent = hasClaude ? '🧠 Claude AI' : '📋 Script';
+  document.getElementById('ai-provider').textContent = hasClaude ? '✨ Gemini AI' : '📋 Script';
   document.getElementById('ai-provider').style.color = hasClaude ? 'var(--blue)' : 'var(--text3)';
 
   document.getElementById('setup').style.display='none';
