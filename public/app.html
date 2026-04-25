@@ -212,17 +212,25 @@ html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--tex
 
   <!-- HR Photo -->
   <div class="card">
-    <div class="ctitle">รูป HR <span class="ctag ctag-green">Talking Head</span></div>
-    <div class="phwrap">
+    <div class="ctitle">รูป HR <span class="ctag ctag-green">D-ID Talking Avatar</span></div>
+    <div class="f">
+      <label>Image URL รูป HR <span style="color:var(--text3);font-weight:400">(จำเป็นสำหรับ D-ID)</span></label>
+      <input id="hr-img-url" placeholder="https://i.imgur.com/xxxx.jpg หรือ URL รูปจากที่ไหนก็ได้"/>
+      <span class="fhint">
+        อัปโหลดรูปขึ้น <a href="https://imgur.com/upload" target="_blank">imgur.com</a> หรือ <a href="https://imgbb.com" target="_blank">imgbb.com</a> ฟรี → copy URL มาวางตรงนี้ครับ
+        · รูปหน้าตรง พื้นหลังเรียบ ให้ผลดีที่สุด
+      </span>
+    </div>
+    <div class="phwrap" style="margin-top:4px">
       <div class="phdrop" id="phdrop" onclick="document.getElementById('phinput').click()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-        <div class="phlbl" id="phlbl">อัปโหลด<br>รูป HR</div>
+        <div class="phlbl" id="phlbl">หรืออัปโหลด<br>เพื่อ preview</div>
         <img id="phprev" style="display:none"/>
       </div>
       <input type="file" id="phinput" accept="image/*" style="display:none" onchange="onPhoto(this)"/>
       <div class="phinfo">
-        <div class="phinfo-title">รูปภาพ HR</div>
-        <div class="phinfo-sub">รูปหน้าตรง พื้นหลังเรียบ ปากจะขยับตามเสียงพูด ถ้าไม่อัปโหลดใช้ Avatar SVG แทน</div>
+        <div class="phinfo-title">หมายเหตุ</div>
+        <div class="phinfo-sub">D-ID ต้องการ public URL ของรูป ไม่สามารถรับไฟล์โดยตรงได้ กรุณาอัปโหลดรูปขึ้น imgur/imgbb แล้ว copy URL มาใส่ครับ</div>
       </div>
     </div>
   </div>
@@ -582,7 +590,8 @@ function startSession(){
   document.getElementById('b-ai').textContent = '✨ Gemini AI';
   document.getElementById('b-ai').style.color = 'var(--blue)';
   if(voiceIds[lang]){ document.getElementById('b-voice').textContent='🎙 ElevenLabs'; document.getElementById('b-voice').style.color='var(--green)'; }
-  if(hrPhotoURL){ document.getElementById('b-av').textContent='🎭 D-ID'; document.getElementById('b-av').style.color='var(--green)'; }
+  const hrImgUrl = document.getElementById('hr-img-url')?.value.trim();
+  if(hrImgUrl){ document.getElementById('b-av').textContent='🎭 D-ID'; document.getElementById('b-av').style.color='var(--green)'; }
 
   document.getElementById('setup').style.display='none';
   document.getElementById('call').style.display='flex';
@@ -771,18 +780,14 @@ function stopLip(){clearInterval(lipT);mT=0;}
 // D-ID Talking Avatar
 // ══════════════════════════════════════════════════════
 function initDID(){
-  if(!hrPhotoURL){ console.log('No HR photo — using Canvas'); return; }
-  // Convert data URL to blob URL for D-ID
-  fetch(hrPhotoURL)
-    .then(r=>r.blob())
-    .then(blob=>{
-      // Store as data URL — D-ID needs public URL, so we use a workaround
-      // We'll send base64 directly in the API call
-      DID.on = true;
-      DID.imageUrl = hrPhotoURL;
-      DID.voice = CFG.didVoice || 'th-TH-PremwadeeNeural';
-      toast('D-ID Avatar พร้อม ✓');
-    }).catch(()=>{});
+  const url = document.getElementById('hr-img-url')?.value.trim();
+  if(!url){ console.log('No HR image URL — using Canvas'); return; }
+  DID.on = true;
+  DID.imageUrl = url;
+  DID.voice = CFG.didVoice || 'th-TH-PremwadeeNeural';
+  // Also show preview on canvas
+  if(url){const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{hrImg=img;};img.src=url;}
+  toast('D-ID Avatar พร้อม ✓');
 }
 
 async function speakDID(text){
