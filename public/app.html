@@ -99,8 +99,7 @@ html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--tex
 .vcell{position:relative;overflow:hidden;background:#060810;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--bdr)}
 .vcell:last-child{border-right:none}
 #hr-canvas{position:absolute;inset:0;width:100%;height:100%}
-#simli-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
-#simli-aud{display:none}
+
 #cam-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
 
 /* Camera overlay */
@@ -236,13 +235,21 @@ html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--tex
 
   <!-- Simli -->
   <div class="card">
-    <div class="ctitle">Simli Avatar <span class="ctag ctag-green">หน้าคนจริง Real-time</span></div>
+    <div class="ctitle">D-ID Avatar <span class="ctag ctag-green">หน้าคนจริง พูดได้</span></div>
+    <div class="env-ok ok">✓ DID_API_KEY ตั้งค่าไว้ใน Vercel Environment Variables แล้ว · รูป HR จะใช้รูปที่อัปโหลดในหน้านี้</div>
     <div class="f">
-      <label>Face ID <span style="color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label>
-      <input id="simli-id" placeholder="เช่น 0c2b8b04-5274-41f1-a21c-d5c98322efa9"/>
-      <span class="fhint">หา Face ID ที่ <a href="https://simli.com" target="_blank">simli.com</a> → Your Avatars · ถ้าว่างใช้ Talking Head Canvas แทน</span>
+      <label>เสียง D-ID <span style="color:var(--text3);font-weight:400">(ไม่บังคับ — ถ้าว่างใช้ Web Speech แทน)</span></label>
+      <select id="did-voice">
+        <option value="th-TH-PremwadeeNeural">🇹🇭 ไทย — Premwadee (หญิง)</option>
+        <option value="th-TH-NiwatNeural">🇹🇭 ไทย — Niwat (ชาย)</option>
+        <option value="en-US-JennyNeural">🇺🇸 English — Jenny (หญิง)</option>
+        <option value="en-US-GuyNeural">🇺🇸 English — Guy (ชาย)</option>
+        <option value="zh-CN-XiaoxiaoNeural">🇨🇳 中文 — Xiaoxiao</option>
+        <option value="ja-JP-NanamiNeural">🇯🇵 日本語 — Nanami</option>
+        <option value="ko-KR-SunHiNeural">🇰🇷 한국어 — SunHi</option>
+      </select>
+      <span class="fhint">D-ID จะพูดด้วยเสียงนี้และขยับปากตามอัตโนมัติ ไม่ต้องใช้ ElevenLabs ครับ</span>
     </div>
-    <div class="env-ok ok">✓ SIMLI_API_KEY ตั้งค่าไว้ใน Vercel Environment Variables แล้ว</div>
   </div>
 
   <!-- ElevenLabs -->
@@ -294,8 +301,7 @@ html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--tex
     <!-- HR -->
     <div class="vcell">
       <canvas id="hr-canvas"></canvas>
-      <video id="simli-vid" autoplay playsinline></video>
-      <audio id="simli-aud" autoplay></audio>
+      <video id="did-video" autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"></video>
       <div class="ring" id="hr-ring">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="100" fill="none" stroke="#4f8ef7" stroke-width="3" opacity=".65"><animate attributeName="opacity" values=".65;.1;.65" dur="1.4s" repeatCount="indefinite"/></rect></svg>
       </div>
@@ -470,7 +476,7 @@ let ST = {
 const SYN = window.speechSynthesis;
 let kaTimer = null;
 let CVS, CTX, hrImg=null, mO=0, mT=0, raf=null, lipT=null;
-let SIMLI = {pc:null, dc:null, on:false};
+let DID = {on:false, imageUrl:null, voice:'th-TH-PremwadeeNeural'};
 
 // ══════════════════════════════════════════════════════
 // SETUP
@@ -559,7 +565,7 @@ function startSession(){
     job: document.getElementById('job').value.trim()||'Software Engineer',
     company: document.getElementById('company').value.trim()||'บริษัท',
     maxQ: parseInt(document.getElementById('qcount').value),
-    simliId: document.getElementById('simli-id').value.trim(),
+    didVoice: document.getElementById('did-voice').value,
   };
   ST.maxQ = CFG.maxQ;
 
@@ -576,13 +582,13 @@ function startSession(){
   document.getElementById('b-ai').textContent = '✨ Gemini AI';
   document.getElementById('b-ai').style.color = 'var(--blue)';
   if(voiceIds[lang]){ document.getElementById('b-voice').textContent='🎙 ElevenLabs'; document.getElementById('b-voice').style.color='var(--green)'; }
-  if(CFG.simliId){ document.getElementById('b-av').textContent='🎭 Simli'; document.getElementById('b-av').style.color='var(--green)'; }
+  if(hrPhotoURL){ document.getElementById('b-av').textContent='🎭 D-ID'; document.getElementById('b-av').style.color='var(--green)'; }
 
   document.getElementById('setup').style.display='none';
   document.getElementById('call').style.display='flex';
 
   initCanvas();
-  if(CFG.simliId) initSimli();
+  initDID();
   startMedia(); // auto-request camera
 
   ST.startT=Date.now();
@@ -762,61 +768,55 @@ function startLip(){lipT=setInterval(()=>{mT=Math.random()>.4?Math.random()*.9+.
 function stopLip(){clearInterval(lipT);mT=0;}
 
 // ══════════════════════════════════════════════════════
-// SIMLI WebRTC
+// D-ID Talking Avatar
 // ══════════════════════════════════════════════════════
-async function initSimli(){
-  try{
-    const r=await fetch('/api/simli',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({face_id:CFG.simliId})});
-    if(!r.ok) throw new Error('session '+r.status);
-    const {session_token,ice_servers}=await r.json();
-    if(!session_token) throw new Error('no token');
-    const iceServers=ice_servers?.length?ice_servers:[{urls:'stun:stun.l.google.com:19302'}];
-    SIMLI.pc=new RTCPeerConnection({iceServers});
-    SIMLI.pc.ontrack=e=>{
-      const vid=document.getElementById('simli-vid'),aud=document.getElementById('simli-aud');
-      if(e.track.kind==='video'&&vid){
-        if(!vid.srcObject)vid.srcObject=new MediaStream();
-        vid.srcObject.addTrack(e.track);
-        vid.style.display='block';
-        CVS.style.display='none';
-        SIMLI.on=true;
-        document.getElementById('b-av').textContent='🎭 Simli Live';
-        toast('Simli Avatar พร้อม ✓');
-      }
-      if(e.track.kind==='audio'&&aud){
-        if(!aud.srcObject)aud.srcObject=new MediaStream();
-        aud.srcObject.addTrack(e.track);
-      }
-    };
-    SIMLI.dc=SIMLI.pc.createDataChannel('audio');
-    SIMLI.pc.addTransceiver('video',{direction:'recvonly'});
-    SIMLI.pc.addTransceiver('audio',{direction:'recvonly'});
-    const offer=await SIMLI.pc.createOffer();
-    await SIMLI.pc.setLocalDescription(offer);
-    const sr2=await fetch('https://api.simli.ai/startWebRTCSession/sdp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sdp:offer.sdp,session_token,type:offer.type})});
-    if(!sr2.ok) throw new Error('SDP '+sr2.status);
-    const {sdp:asdp,type:atype}=await sr2.json();
-    await SIMLI.pc.setRemoteDescription({type:atype||'answer',sdp:asdp});
-  }catch(e){console.warn('Simli:',e.message);toast('Simli: '+e.message+' — ใช้ Canvas แทน');}
+function initDID(){
+  if(!hrPhotoURL){ console.log('No HR photo — using Canvas'); return; }
+  // Convert data URL to blob URL for D-ID
+  fetch(hrPhotoURL)
+    .then(r=>r.blob())
+    .then(blob=>{
+      // Store as data URL — D-ID needs public URL, so we use a workaround
+      // We'll send base64 directly in the API call
+      DID.on = true;
+      DID.imageUrl = hrPhotoURL;
+      DID.voice = CFG.didVoice || 'th-TH-PremwadeeNeural';
+      toast('D-ID Avatar พร้อม ✓');
+    }).catch(()=>{});
 }
 
-async function simliAudio(blob){
-  if(!SIMLI.on||!SIMLI.dc||SIMLI.dc.readyState!=='open')return;
+async function speakDID(text){
+  if(!DID.on || !DID.imageUrl) return false;
   try{
-    const actx2=new AudioContext();
-    const decoded=await actx2.decodeAudioData(await blob.arrayBuffer());
-    const oc=new OfflineAudioContext(1,decoded.length,16000);
-    const s2=oc.createBufferSource();s2.buffer=decoded;s2.connect(oc.destination);s2.start();
-    const rs=await oc.startRendering();
-    const pcm=new Int16Array(rs.length);
-    const data=rs.getChannelData(0);
-    for(let i=0;i<data.length;i++)pcm[i]=Math.max(-32768,Math.min(32767,data[i]*32768));
-    const bytes=new Uint8Array(pcm.buffer);
-    for(let i=0;i<bytes.length;i+=6000)SIMLI.dc.send(bytes.slice(i,i+6000));
-  }catch(e){}
+    const r = await fetch('/api/did',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        image_url: DID.imageUrl,
+        text: text,
+        voice_id: DID.voice,
+      })
+    });
+    if(!r.ok){ console.warn('D-ID error:', r.status); return false; }
+    const d = await r.json();
+    if(!d.result_url) return false;
+    const vid = document.getElementById('did-video');
+    if(vid){
+      vid.src = d.result_url;
+      vid.style.display = 'block';
+      CVS.style.display = 'none';
+      await new Promise((res,rej)=>{
+        vid.onended = res;
+        vid.onerror = rej;
+        vid.play().catch(rej);
+      });
+      vid.style.display = 'none';
+      CVS.style.display = 'block';
+    }
+    return true;
+  }catch(e){ console.warn('D-ID speak error:', e); return false; }
 }
 
-// ══════════════════════════════════════════════════════
 // AI — Gemini → Question Bank fallback
 // ══════════════════════════════════════════════════════
 async function callAI(userMsg){
@@ -845,8 +845,19 @@ function chunks(text,max=160){
 async function speakHR(text){
   setHRTalking(true);
   if(ST.isMuted){setHRTalking(false);return;}
+
+  // Try D-ID first (if HR photo uploaded)
+  if(DID.on){
+    const ok = await speakDID(text);
+    if(ok){stopLip();setHRTalking(false);return;}
+    toast('D-ID ไม่ตอบสนอง — ใช้ Web Speech แทน');
+  }
+
+  // Try ElevenLabs
   const vid=voiceIds[CFG.langKey];
   if(vid){const ok=await speakEL(text,vid);if(ok){stopLip();setHRTalking(false);return;}}
+
+  // Fallback Web Speech
   await speakWS(text);
   stopLip();setHRTalking(false);
 }
@@ -995,7 +1006,7 @@ async function finishSession(){
   stopLip();cancelAnimationFrame(raf);stopListen();setHRTalking(false);
   ST.stream?.getTracks().forEach(t=>t.stop());
   if(ST.actx)ST.actx.close().catch(()=>{});
-  SIMLI.pc?.close();
+  // D-ID cleanup (no persistent connection)
   document.getElementById('call').style.display='none';
   document.getElementById('end').style.display='flex';
   const score=Math.floor(Math.random()*22)+72;
