@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI HR Interview</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0d13;--bg2:#11141d;--bg3:#181c28;--bg4:#1f2435;
+  --text:#e8eaf2;--text2:#8b94ab;--text3:#454e63;
+  --bdr:rgba(255,255,255,.06);--bdr2:rgba(255,255,255,.11);
+  --blue:#4f8ef7;--green:#34d399;--red:#f87171;--amber:#fbbf24;
+  --r:12px;--rs:8px;--fn:'Inter','Segoe UI',sans-serif;
+}
+html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--text)}
+
+/* SETUP */
+#setup{max-width:560px;margin:0 auto;padding:36px 18px 60px;display:flex;flex-direction:column;gap:18px}
+.hero{text-align:center;padding-bottom:4px}
+.hero-tag{display:inline-block;padding:3px 12px;border-radius:20px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.2);font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.hero-title{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.hero-title em{font-style:normal;background:linear-gradient(135deg,#4f8ef7,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:13px;color:var(--text2);margin-top:6px;line-height:1.6}
+.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px}
+.ctitle{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);padding-bottom:9px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:7px}
+.ctag{font-size:10px;padding:1px 7px;border-radius:20px;font-weight:600}
+.ctag-blue{background:rgba(79,142,247,.12);color:var(--blue)}
+.ctag-green{background:rgba(52,211,153,.12);color:var(--green)}
+.ctag-amber{background:rgba(251,191,36,.12);color:var(--amber)}
+.f{display:flex;flex-direction:column;gap:4px}
+.f label{font-size:12px;color:var(--text2);font-weight:500}
+.f input,.f select{background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--text);font-size:13px;font-family:var(--fn);padding:9px 12px;outline:none;width:100%;transition:border-color .2s,box-shadow .2s}
+.f input:focus,.f select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,142,247,.1)}
+.f input::placeholder{color:var(--text3)}
+.f select option{background:var(--bg3)}
+.fhint{font-size:11px;color:var(--text3);line-height:1.5}
+.fhint a{color:var(--blue);text-decoration:none}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Photo */
+.phwrap{display:flex;gap:12px;align-items:flex-start}
+.phdrop{width:82px;height:82px;border-radius:var(--rs);border:2px dashed var(--bdr2);background:var(--bg3);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;overflow:hidden;position:relative;transition:border-color .2s}
+.phdrop:hover{border-color:var(--blue)}
+.phdrop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.phlbl{font-size:10px;color:var(--text3);text-align:center;line-height:1.4;padding:0 4px}
+.phinfo{flex:1;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.phinfo-title{font-size:13px;font-weight:600}
+.phinfo-sub{font-size:11px;color:var(--text2);line-height:1.5}
+
+/* Lang grid */
+.lgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.lbtn{padding:9px 5px;border-radius:var(--rs);border:1px solid var(--bdr2);background:var(--bg3);cursor:pointer;text-align:center;transition:all .15s}
+.lbtn:hover{background:var(--bg4)}
+.lbtn.sel{border-color:var(--blue);background:rgba(79,142,247,.08)}
+.lbtn-flag{font-size:18px;display:block;margin-bottom:2px}
+.lbtn-name{font-size:10px;font-weight:600;color:var(--text);display:block}
+.lbtn-sub{font-size:9px;color:var(--text2);display:block}
+
+/* Voice fetch */
+.vbtn-row{display:flex;gap:7px}
+.vfetch-btn{padding:0 12px;height:38px;border-radius:var(--rs);border:1px solid var(--bdr2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--fn);flex-shrink:0;transition:all .15s}
+.vfetch-btn:hover{background:var(--bg4);color:var(--text)}
+.vstatus{display:none;font-size:11px;padding:7px 10px;border-radius:var(--rs);background:var(--bg3);border:1px solid var(--bdr)}
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.vrow{display:flex;flex-direction:column;gap:3px}
+.vrow label{font-size:10px;color:var(--text2)}
+.vrow-inp{display:flex;gap:4px}
+.vrow-inp input{flex:1;background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--text);font-size:11px;font-family:var(--fn);padding:7px 9px;outline:none}
+.vrow-inp input:focus{border-color:var(--blue)}
+.vtest{width:30px;height:30px;border-radius:var(--rs);border:1px solid var(--bdr2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.vtest:hover{background:var(--bg4);color:var(--text)}
+
+/* Status badge */
+.env-ok{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--rs);font-size:11px;line-height:1.5}
+.env-ok.ok{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.18);color:var(--green)}
+.env-ok.info{background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.18);color:var(--blue)}
+
+.start-btn{width:100%;padding:13px;background:linear-gradient(135deg,#4f8ef7,#8b5cf6);border:none;border-radius:var(--r);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--fn);transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:7px}
+.start-btn:hover{opacity:.9}
+.start-btn:active{transform:scale(.98)}
+
+/* CALL */
+#call{display:none;flex-direction:column;height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;border-bottom:1px solid var(--bdr);background:var(--bg2);flex-shrink:0}
+.tb-logo{font-size:13px;font-weight:800}
+.tb-logo em{font-style:normal;background:linear-gradient(135deg,#4f8ef7,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tb-badges{display:flex;gap:8px}
+.tbadge{font-size:10px;color:var(--text3)}
+.tb-right{display:flex;gap:7px}
+.tpill{display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:20px;border:1px solid var(--bdr2);background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:all .15s}
+.tpill:hover{background:var(--bg3)}
+.tpill.muted{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--red)}
+.tpill.danger{border-color:rgba(248,113,113,.3);color:var(--red)}
+.tpill.danger:hover{background:rgba(248,113,113,.1)}
+
+/* Video */
+.vrow2{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0}
+.vcell{position:relative;overflow:hidden;background:#060810;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--bdr)}
+.vcell:last-child{border-right:none}
+#hr-canvas{position:absolute;inset:0;width:100%;height:100%}
+
+#cam-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
+
+/* Camera overlay */
+#cam-ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(6,8,16,.96);z-index:10}
+.cam-icon{width:52px;height:52px;border-radius:50%;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.22);display:flex;align-items:center;justify-content:center}
+#cam-ov-title{font-size:14px;font-weight:700}
+#cam-ov-sub{font-size:11px;color:var(--text2);text-align:center;max-width:200px;line-height:1.5}
+.cam-allow-btn{padding:9px 24px;border-radius:var(--rs);background:linear-gradient(135deg,#059669,#34d399);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--fn)}
+#cam-error{display:none;font-size:11px;color:var(--red);text-align:center;max-width:220px;line-height:1.5}
+#cam-retry{display:none;padding:6px 14px;border-radius:var(--rs);border:1px solid var(--bdr2);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--fn)}
+
+/* Overlays */
+.vc-over{position:absolute;bottom:0;left:0;right:0;padding:10px 12px;background:linear-gradient(transparent,rgba(0,0,0,.75));display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}
+.vc-name{font-size:13px;font-weight:700;color:#fff}
+.vc-role{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+.vc-tag{position:absolute;top:9px;left:9px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:3px 9px;border-radius:20px;font-size:10px;color:#fff;font-weight:600}
+.dot{width:6px;height:6px;border-radius:50%}
+.dot.live{background:var(--red);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.wave{display:flex;align-items:center;gap:2px;height:16px;opacity:0;transition:opacity .3s}
+.wave.on{opacity:1}
+.wbar{width:3px;border-radius:3px;animation:wv .75s ease-in-out infinite}
+.wbar:nth-child(1){animation-delay:0s}.wbar:nth-child(2){animation-delay:.1s}.wbar:nth-child(3){animation-delay:.2s}.wbar:nth-child(4){animation-delay:.1s}.wbar:nth-child(5){animation-delay:0s}
+@keyframes wv{0%,100%{height:3px}50%{height:14px}}
+.ring{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s}
+.ring.on{opacity:1}
+.ring svg{width:100%;height:100%}
+.cam-badge{display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:3px 9px;border-radius:20px;font-size:10px;color:#fff;pointer-events:none}
+
+/* Bottom */
+.bottom{display:flex;flex-direction:column;flex-shrink:0;border-top:1px solid var(--bdr)}
+.sbar{display:flex;align-items:center;gap:14px;padding:6px 16px;background:var(--bg2);border-bottom:1px solid var(--bdr);font-size:10px;color:var(--text2)}
+.sv{font-weight:700;color:var(--text);font-size:11px}
+.prog{flex:1;height:3px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),#8b5cf6);transition:width .5s ease}
+.chat{display:flex;flex-direction:column;height:190px}
+.msgs{flex:1;overflow-y:auto;padding:9px 14px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.msgs::-webkit-scrollbar{width:3px}
+.msgs::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.msg{display:flex;gap:7px;align-items:flex-start;animation:mi .2s ease}
+.msg.r{flex-direction:row-reverse}
+@keyframes mi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.mav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;border:1px solid var(--bdr2)}
+.mbub{max-width:80%;font-size:12px;line-height:1.55;padding:7px 11px;border-radius:11px;border:1px solid var(--bdr);background:var(--bg3);color:var(--text)}
+.msg.l .mbub{border-radius:3px 11px 11px 11px}
+.msg.r .mbub{background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.2);border-radius:11px 3px 11px 11px}
+.typing{padding:9px 11px;background:var(--bg3);border:1px solid var(--bdr);border-radius:3px 11px 11px 11px;display:flex;gap:4px;align-items:center;width:fit-content}
+.td{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:td 1.2s infinite}
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes td{0%,80%,100%{opacity:.3;transform:scale(.85)}40%{opacity:1;transform:scale(1)}}
+.ibar{display:flex;gap:7px;padding:9px 12px;border-top:1px solid var(--bdr);background:var(--bg2);flex-shrink:0;align-items:center}
+.itxt{flex:1;background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--text);font-size:12px;font-family:var(--fn);padding:8px 12px;outline:none;transition:border-color .2s}
+.itxt:focus{border-color:var(--blue)}
+.itxt::placeholder{color:var(--text3)}
+.ibtn{height:36px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:all .15s;display:flex;align-items:center;justify-content:center;border:none}
+.ibtn.mic{width:36px;background:var(--bg3);border:1px solid var(--bdr2);color:var(--text2)}
+.ibtn.mic:hover{background:var(--bg4)}
+.ibtn.mic.rec{background:rgba(248,113,113,.12);border-color:var(--red);color:var(--red);animation:mp 1s infinite}
+@keyframes mp{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.3)}50%{box-shadow:0 0 0 4px rgba(248,113,113,0)}}
+.ibtn.send{padding:0 16px;background:linear-gradient(135deg,var(--blue),#8b5cf6);color:#fff}
+.ibtn.send:hover{opacity:.9}
+.ibtn.send:disabled{opacity:.4;cursor:not-allowed}
+
+/* END */
+#end{display:none;flex-direction:column;align-items:center;justify-content:center;max-width:480px;margin:auto;padding:44px 18px;gap:16px}
+.sring{width:84px;height:84px;position:relative;display:flex;align-items:center;justify-content:center}
+.sring svg{position:absolute;inset:0}
+.sinner{z-index:1;text-align:center}
+.snum{font-size:24px;font-weight:800;background:linear-gradient(135deg,var(--blue),#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sunit{font-size:10px;color:var(--text2)}
+.etitle{font-size:19px;font-weight:700;text-align:center}
+.fbgrid{width:100%;display:flex;flex-direction:column;gap:7px}
+.fbitem{padding:10px 13px;background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.55;color:var(--text2)}
+.eacts{display:flex;gap:9px}
+.ebtn{padding:8px 16px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fn);border:1px solid var(--bdr2);background:var(--bg2);color:var(--text)}
+.ebtn:hover{background:var(--bg3)}
+.ebtn.p{background:linear-gradient(135deg,var(--blue),#8b5cf6);border:none;color:#fff}
+
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--bg3);border:1px solid var(--bdr2);border-radius:20px;padding:7px 16px;font-size:11px;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- ═══════════════ SETUP ═══════════════ -->
+<div id="setup">
+  <div class="hero">
+    <div class="hero-tag">AI Interview Platform v2</div>
+    <div class="hero-title">ระบบสัมภาษณ์งาน <em>AI</em></div>
+    <div class="hero-sub">Gemini AI · ElevenLabs เสียงจริง · Simli Avatar · กล้องผู้สมัคร</div>
+  </div>
+
+  <!-- Job info -->
+  <div class="card">
+    <div class="ctitle">ข้อมูลการสัมภาษณ์</div>
+    <div class="f2">
+      <div class="f"><label>ตำแหน่งงาน</label><input id="job" placeholder="เช่น Software Engineer"/></div>
+      <div class="f"><label>บริษัท</label><input id="company" placeholder="เช่น TechCorp"/></div>
+    </div>
+    <div class="f">
+      <label>จำนวนคำถาม</label>
+      <select id="qcount">
+        <option value="5">5 คำถาม (~10 นาที)</option>
+        <option value="8" selected>8 คำถาม (~18 นาที)</option>
+        <option value="12">12 คำถาม (~25 นาที)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- HR Photo -->
+  <div class="card">
+    <div class="ctitle">รูป HR <span class="ctag ctag-green">D-ID Talking Avatar</span></div>
+    <div class="f">
+      <label>Image URL รูป HR <span style="color:var(--text3);font-weight:400">(จำเป็นสำหรับ D-ID)</span></label>
+      <input id="hr-img-url" placeholder="https://i.imgur.com/xxxx.jpg หรือ URL รูปจากที่ไหนก็ได้"/>
+      <span class="fhint">
+        อัปโหลดรูปขึ้น <a href="https://imgur.com/upload" target="_blank">imgur.com</a> หรือ <a href="https://imgbb.com" target="_blank">imgbb.com</a> ฟรี → copy URL มาวางตรงนี้ครับ
+        · รูปหน้าตรง พื้นหลังเรียบ ให้ผลดีที่สุด
+      </span>
+    </div>
+    <div class="phwrap" style="margin-top:4px">
+      <div class="phdrop" id="phdrop" onclick="document.getElementById('phinput').click()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <div class="phlbl" id="phlbl">หรืออัปโหลด<br>เพื่อ preview</div>
+        <img id="phprev" style="display:none"/>
+      </div>
+      <input type="file" id="phinput" accept="image/*" style="display:none" onchange="onPhoto(this)"/>
+      <div class="phinfo">
+        <div class="phinfo-title">หมายเหตุ</div>
+        <div class="phinfo-sub">D-ID ต้องการ public URL ของรูป ไม่สามารถรับไฟล์โดยตรงได้ กรุณาอัปโหลดรูปขึ้น imgur/imgbb แล้ว copy URL มาใส่ครับ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Language -->
+  <div class="card">
+    <div class="ctitle">ภาษา / สำเนียง HR <span class="ctag ctag-blue">9 ภาษา</span></div>
+    <div class="lgrid" id="lgrid"></div>
+  </div>
+
+  <!-- Simli -->
+  <div class="card">
+    <div class="ctitle">D-ID Avatar <span class="ctag ctag-green">หน้าคนจริง พูดได้</span></div>
+    <div class="env-ok ok">✓ DID_API_KEY ตั้งค่าไว้ใน Vercel Environment Variables แล้ว · รูป HR จะใช้รูปที่อัปโหลดในหน้านี้</div>
+    <div class="f">
+      <label>เสียง D-ID <span style="color:var(--text3);font-weight:400">(ไม่บังคับ — ถ้าว่างใช้ Web Speech แทน)</span></label>
+      <select id="did-voice">
+        <option value="th-TH-PremwadeeNeural">🇹🇭 ไทย — Premwadee (หญิง)</option>
+        <option value="th-TH-NiwatNeural">🇹🇭 ไทย — Niwat (ชาย)</option>
+        <option value="en-US-JennyNeural">🇺🇸 English — Jenny (หญิง)</option>
+        <option value="en-US-GuyNeural">🇺🇸 English — Guy (ชาย)</option>
+        <option value="zh-CN-XiaoxiaoNeural">🇨🇳 中文 — Xiaoxiao</option>
+        <option value="ja-JP-NanamiNeural">🇯🇵 日本語 — Nanami</option>
+        <option value="ko-KR-SunHiNeural">🇰🇷 한국어 — SunHi</option>
+      </select>
+      <span class="fhint">D-ID จะพูดด้วยเสียงนี้และขยับปากตามอัตโนมัติ ไม่ต้องใช้ ElevenLabs ครับ</span>
+    </div>
+  </div>
+
+  <!-- ElevenLabs -->
+  <div class="card">
+    <div class="ctitle">ElevenLabs <span class="ctag ctag-amber">เสียงคนจริง</span></div>
+    <div class="f">
+      <label>ดึงรายการเสียง</label>
+      <div class="vbtn-row">
+        <div style="flex:1;padding:9px 12px;border-radius:var(--rs);border:1px solid rgba(52,211,153,.25);background:rgba(52,211,153,.05);font-size:11px;color:var(--green)">✓ ELEVENLABS_API_KEY ตั้งค่าไว้ใน Vercel แล้ว</div>
+        <button class="vfetch-btn" onclick="fetchVoices()">ดึง Voices</button>
+      </div>
+      <div class="vstatus" id="vstatus"></div>
+    </div>
+    <div class="vgrid" id="vgrid"></div>
+    <datalist id="vlist"></datalist>
+    <span class="fhint">กด "ดึง Voices" → เลือก Voice ID ต่อภาค → กด ▶ ทดสอบก่อนสัมภาษณ์ · ถ้าไม่ใส่ใช้ Web Speech แทน</span>
+  </div>
+
+  <!-- Gemini / AI -->
+  <div class="card">
+    <div class="ctitle">AI Engine <span class="ctag ctag-blue">HR ตอบโต้ dynamic</span></div>
+    <div class="env-ok info">✨ ใช้ Gemini 2.0 Flash (GEMINI_API_KEY ตั้งค่าไว้ใน Vercel แล้ว) · fallback ไปใช้ question bank อัตโนมัติ</div>
+  </div>
+
+  <button class="start-btn" onclick="startSession()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    เริ่มสัมภาษณ์
+  </button>
+</div>
+
+<!-- ═══════════════ CALL ═══════════════ -->
+<div id="call">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="tb-logo">AI <em>Interview</em></div>
+      <div class="tb-badges">
+        <span class="tbadge" id="b-voice">🔊 Web Speech</span>
+        <span class="tbadge" id="b-ai">✨ Gemini AI</span>
+        <span class="tbadge" id="b-av">🖼 Canvas</span>
+      </div>
+    </div>
+    <div class="tb-right">
+      <button class="tpill" id="mute-btn" onclick="toggleMute()">🔊 เสียง</button>
+      <button class="tpill danger" onclick="endSession()">✕ จบ</button>
+    </div>
+  </div>
+
+  <div class="vrow2">
+    <!-- HR -->
+    <div class="vcell">
+      <canvas id="hr-canvas"></canvas>
+      <video id="did-video" autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"></video>
+      <div class="ring" id="hr-ring">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="100" fill="none" stroke="#4f8ef7" stroke-width="3" opacity=".65"><animate attributeName="opacity" values=".65;.1;.65" dur="1.4s" repeatCount="indefinite"/></rect></svg>
+      </div>
+      <div class="vc-tag"><div class="dot live"></div><span>HR</span></div>
+      <div class="vc-over">
+        <div><div class="vc-name" id="hr-name">—</div><div class="vc-role">HR Manager</div></div>
+        <div class="wave" id="hr-wave">
+          <div class="wbar" style="background:#4f8ef7"></div><div class="wbar" style="background:#4f8ef7"></div>
+          <div class="wbar" style="background:#4f8ef7"></div><div class="wbar" style="background:#4f8ef7"></div>
+          <div class="wbar" style="background:#4f8ef7"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Candidate webcam -->
+    <div class="vcell">
+      <video id="cam-vid" autoplay playsinline muted></video>
+      <!-- Camera permission overlay -->
+      <div id="cam-ov">
+        <div class="cam-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </div>
+        <div id="cam-ov-title">เปิดกล้อง + ไมค์</div>
+        <div id="cam-ov-sub">ขอสิทธิ์ครั้งเดียว ใช้ตลอดการสัมภาษณ์</div>
+        <button class="cam-allow-btn" id="cam-allow-btn" onclick="startMedia()">อนุญาต</button>
+        <div id="cam-error"></div>
+        <button id="cam-retry" onclick="startMedia()">ลองใหม่</button>
+      </div>
+      <div class="ring" id="cand-ring">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="100" fill="none" stroke="#34d399" stroke-width="3" opacity=".65"><animate attributeName="opacity" values=".65;.1;.65" dur="1.4s" repeatCount="indefinite"/></rect></svg>
+      </div>
+      <div class="vc-tag" style="left:auto;right:9px"><div class="dot" style="background:var(--green)"></div><span>ผู้สมัคร</span></div>
+      <div class="vc-over">
+        <div><div class="vc-name" id="cand-name">ผู้สมัคร</div><div class="vc-role" id="cand-role">—</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div class="cam-badge"><div style="width:5px;height:5px;border-radius:50%;background:var(--text3)" id="cam-dot"></div><span id="cam-lbl">รอกล้อง</span></div>
+          <div class="wave" id="cand-wave">
+            <div class="wbar" style="background:#34d399"></div><div class="wbar" style="background:#34d399"></div>
+            <div class="wbar" style="background:#34d399"></div><div class="wbar" style="background:#34d399"></div>
+            <div class="wbar" style="background:#34d399"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="sbar">
+      <span>⏱</span><span class="sv" id="stime">0:00</span>
+      <span>❓</span><span class="sv" id="sq">0/8</span>
+      <div class="prog"><div class="prog-fill" id="sprog" style="width:0%"></div></div>
+      <span id="sstatus" style="font-size:10px">กำลังเตรียม…</span>
+    </div>
+    <div class="chat">
+      <div class="msgs" id="msgs"></div>
+      <div class="ibar">
+        <button class="ibtn mic" id="mic-btn" onclick="toggleMic()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+        <input class="itxt" id="inp" placeholder="พิมพ์คำตอบ หรือกดไมค์พูด…"/>
+        <button class="ibtn send" id="send-btn" onclick="sendReply()">
+          ส่ง <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="margin-left:3px"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ END ═══════════════ -->
+<div id="end">
+  <div class="sring">
+    <svg viewBox="0 0 100 100" width="84" height="84">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(79,142,247,.15)" stroke-width="8"/>
+      <circle id="arc" cx="50" cy="50" r="42" fill="none" stroke="url(#ag)" stroke-width="8"
+        stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+        transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1.2s ease"/>
+      <defs><linearGradient id="ag" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4f8ef7"/><stop offset="100%" stop-color="#8b5cf6"/>
+      </linearGradient></defs>
+    </svg>
+    <div class="sinner"><div class="snum" id="escore">—</div><div class="sunit">/100</div></div>
+  </div>
+  <div class="etitle">การสัมภาษณ์เสร็จสิ้น</div>
+  <div class="fbgrid" id="fbgrid"></div>
+  <div class="eacts">
+    <button class="ebtn" onclick="location.reload()">เริ่มใหม่</button>
+    <button class="ebtn p" onclick="dlTranscript()">⬇ บทสนทนา</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// LANGUAGE CONFIG
+// ══════════════════════════════════════════════════════
+const LANGS = {
+  central:{flag:'🇹🇭',name:'ไทยกลาง',sub:'กรุงเทพฯ',hrName:'คุณนภา สิริวรรณ',pitch:1.05,rate:.95,vl:'th-TH',
+    sys:'คุณเป็น HR มืออาชีพชื่อ "คุณนภา" พูดภาษาไทยกลาง สุภาพ เป็นมืออาชีพ ถามทีละข้อ ไม่เกิน 3 ประโยค'},
+  north:{flag:'🏔️',name:'เหนือ',sub:'คำเมือง',hrName:'พี่มาลี จันทร์แก้ว',pitch:1.1,rate:.93,vl:'th-TH',
+    sys:'คุณเป็น HR ชื่อ "พี่มาลี" พูดภาษาเหนือ ใช้ "เจ้า" แทนคุณ "บ่" แทนไม่ "เน้อ" ลงท้าย ถามทีละข้อ ไม่เกิน 3 ประโยค'},
+  northeast:{flag:'🌾',name:'อีสาน',sub:'ขอนแก่น',hrName:'พี่แดง สีดาวัลย์',pitch:1.05,rate:.97,vl:'th-TH',
+    sys:'คุณเป็น HR ชื่อ "พี่แดง" พูดภาษาอีสาน ใช้ "เจ้า" "บ่" "สิ" "แม่นบ่" "เด้อ" ถามทีละข้อ ไม่เกิน 3 ประโยค'},
+  south:{flag:'🌊',name:'ใต้',sub:'สุราษฎร์ฯ',hrName:'พี่หนุ่ม ปักษ์ใต้',pitch:.9,rate:.98,vl:'th-TH',
+    sys:'คุณเป็น HR ชื่อ "พี่หนุ่ม" พูดสำเนียงใต้ ใช้ "หนิ" ลงท้าย ถามทีละข้อ ไม่เกิน 3 ประโยค'},
+  east:{flag:'🏭',name:'ตะวันออก',sub:'ชลบุรี',hrName:'น้องแพม ชลบุรี',pitch:1.02,rate:.96,vl:'th-TH',
+    sys:'คุณเป็น HR ชื่อ "น้องแพม" พูดสำเนียงตะวันออก ทันสมัย ถามทีละข้อ ไม่เกิน 3 ประโยค'},
+  english:{flag:'🇺🇸',name:'English',sub:'International',hrName:'Alex Johnson',pitch:1.0,rate:.95,vl:'en-US',
+    sys:'You are HR "Alex Johnson". Conduct interview in English. Professional. One question at a time. Max 3 sentences.'},
+  chinese:{flag:'🇨🇳',name:'中文',sub:'普通话',hrName:'李雅婷',pitch:1.0,rate:.95,vl:'zh-CN',
+    sys:'你是专业HR"李雅婷"，用中文面试，每次只问一个问题，3句内。'},
+  japanese:{flag:'🇯🇵',name:'日本語',sub:'標準語',hrName:'田中 美咲',pitch:1.05,rate:.95,vl:'ja-JP',
+    sys:'あなたはHR「田中美咲」。日本語で面接。一度に一問。3文以内。'},
+  korean:{flag:'🇰🇷',name:'한국어',sub:'서울',hrName:'김민지',pitch:1.0,rate:.95,vl:'ko-KR',
+    sys:'당신은 HR "김민지". 한국어로 면접. 한 번에 질문 하나. 3문장 이내.'},
+};
+
+// ══════════════════════════════════════════════════════
+// QUESTION BANK
+// ══════════════════════════════════════════════════════
+const GREET = {
+  central:(j,c)=>`สวัสดีครับ ยินดีต้อนรับสู่การสัมภาษณ์งานตำแหน่ง${j} ที่${c}ครับ ช่วยแนะนำตัวเองสั้นๆ ได้เลยครับ`,
+  north:(j,c)=>`สวัสดีเจ้า ยินดีต้อนรับสู่การสัมภาษณ์งาน${j} ที่${c}เน้อ แนะนำตัวเองก่อนได้เลยเจ้า`,
+  northeast:(j,c)=>`สวัสดีเจ้า ยินดีต้อนรับสู่การสัมภาษณ์งาน${j} ที่${c}เด้อ แนะนำตัวเองก่อนได้เลยเจ้า`,
+  south:(j,c)=>`สวัสดีครับ ยินดีต้อนรับสู่การสัมภาษณ์งาน${j} ที่${c}หนิ แนะนำตัวก่อนนะครับ`,
+  east:(j,c)=>`สวัสดีครับ ยินดีต้อนรับตำแหน่ง${j} ที่${c}ครับ แนะนำตัวและ background สักนิดได้เลยครับ`,
+  english:(j,c)=>`Hello! Welcome to the ${j} interview at ${c}. Could you briefly introduce yourself?`,
+  chinese:(j,c)=>`您好！欢迎参加${c}的${j}面试。请先简单介绍一下您自己。`,
+  japanese:(j,c)=>`こんにちは！${c}の${j}面接へようこそ。自己紹介をお願いできますか？`,
+  korean:(j,c)=>`안녕하세요! ${c}의 ${j} 면접에 오신 것을 환영합니다. 자기소개를 해주시겠어요？`,
+};
+const QS = {
+  central:[j=>`ทำไมถึงสนใจตำแหน่ง${j}ครับ`,j=>`ประสบการณ์ที่เกี่ยวข้องกับ${j}มีอะไรบ้างครับ`,()=>`จุดแข็งที่โดดเด่นของคุณคืออะไรครับ`,()=>`เคยเจอสถานการณ์กดดันในงานไหมครับ รับมือยังไง`,()=>`คาดหวังเรื่องเงินเดือนอย่างไรครับ`,()=>`เริ่มงานได้เร็วสุดเมื่อไหร่ครับ`,()=>`มีคำถามเกี่ยวกับบริษัทหรือตำแหน่งนี้ไหมครับ`],
+  north:[j=>`ทำไมเจ้าถึงสนใจงาน${j}เน้อ`,j=>`เล่าประสบการณ์เกี่ยวกับ${j}ให้ฟังหน่อยเน้อ`,()=>`จุดแข็งของเจ้ามีอะไรบ้างเน้อ`,()=>`เคยเจอปัญหาในงานบ่ แก้ยังไงเน้อ`,()=>`ค่าตอบแทนที่คาดหวังเท่าไหร่เน้อ`,()=>`เริ่มงานได้เมื่อไหร่เน้อ`,()=>`มีอะไรอยากถามบ่เจ้า`],
+  northeast:[j=>`ทำไมเจ้าถึงสนใจงาน${j}เด้อ`,j=>`เล่าประสบการณ์เกี่ยวกับ${j}ให้ฟังแน่เด้อ`,()=>`จุดแข็งของเจ้าคือหยังเด้อ`,()=>`เคยเจอปัญหาในงานบ่ แก้ยังไงเด้อ`,()=>`เงินเดือนคาดหวังเท่าได๋เด้อ`,()=>`เริ่มงานได้เร็วสุดเมื่อไหร่เด้อ`,()=>`มีหยังอยากถามบ่เด้อ`],
+  south:[j=>`ทำไมถึงสนใจงาน${j}หนิ`,j=>`เล่าประสบการณ์เกี่ยวกับ${j}ให้ฟังหน่อยหนิ`,()=>`จุดแข็งมีอะไรบ้างหนิ`,()=>`เคยเจอปัญหาหนักๆ แก้ยังไงหนิ`,()=>`เงินเดือนคาดหวังเท่าไหร่หนิ`,()=>`เริ่มงานได้เมื่อไหร่หนิ`,()=>`มีอะไรอยากถามบ้างไหมหนิ`],
+  east:[j=>`ทำไมถึงสนใจ${j}ครับ`,j=>`walk through ประสบการณ์เกี่ยวกับ${j}หน่อยครับ`,()=>`strength ของคุณคืออะไรครับ`,()=>`เคยเจอ challenge ใหญ่ๆ ในงานไหมครับ`,()=>`salary expectation อยู่ที่เท่าไหร่ครับ`,()=>`available เริ่มงานได้เมื่อไหร่ครับ`,()=>`มี question อยากถามไหมครับ`],
+  english:[j=>`What motivated you to apply for the ${j} position?`,j=>`Walk me through your relevant experience for ${j}.`,()=>`What are your greatest strengths?`,()=>`Describe a challenge you faced at work and how you handled it.`,()=>`What are your salary expectations?`,()=>`When would you be available to start?`,()=>`Do you have any questions for me?`],
+  chinese:[j=>`您为什么对${j}职位感兴趣？`,j=>`介绍一下您与${j}相关的工作经验。`,()=>`您最大的优势是什么？`,()=>`描述一次工作中遇到困难并如何解决。`,()=>`您期望的薪资是多少？`,()=>`如果录用，何时可以入职？`,()=>`您有什么问题想问吗？`],
+  japanese:[j=>`${j}に応募された理由を教えてください。`,j=>`${j}に関連する経験を教えてください。`,()=>`ご自身の強みは何ですか？`,()=>`困難な状況をどう乗り越えましたか？`,()=>`希望給与はありますか？`,()=>`いつから勤務可能ですか？`,()=>`ご質問はありますか？`],
+  korean:[j=>`${j} 포지션에 지원하신 이유는요？`,j=>`${j}관련 경험을 말씀해 주세요.`,()=>`가장 큰 강점은 무엇인가요？`,()=>`어려운 상황을 어떻게 극복했나요？`,()=>`희망 연봉은 얼마인가요？`,()=>`언제부터 출근 가능한가요？`,()=>`질문이 있으신가요？`],
+};
+const CLOSING = {
+  central:()=>`ขอบคุณมากครับที่สละเวลาสัมภาษณ์วันนี้ จะแจ้งผลภายใน 7 วันทำการครับ ขอให้โชคดีนะครับ`,
+  north:()=>`ขอบคุณมากเน้อที่มาสัมภาษณ์วันนี้ จะแจ้งผลภายใน 7 วันเน้อ ขอให้โชคดีเจ้า`,
+  northeast:()=>`ขอบคุณมากเด้อที่มาสัมภาษณ์ สิแจ้งผลภายใน 7 วันเน้อ ขอให้โชคดีเจ้า`,
+  south:()=>`ขอบคุณมากนะครับที่มาสัมภาษณ์หนิ จะแจ้งผลภายใน 7 วันครับ ขอให้โชคดี`,
+  east:()=>`ขอบคุณมากครับที่มา interview จะ follow up ผลภายใน 7 วันครับ ขอให้โชคดี`,
+  english:()=>`Thank you so much for your time! We'll be in touch within 7 business days. Best of luck!`,
+  chinese:()=>`非常感谢您参加面试！我们将在7个工作日内通知您结果。祝您好运！`,
+  japanese:()=>`本日はありがとうございました。7営業日以内にご連絡します。頑張ってください！`,
+  korean:()=>`오늘 면접에 참여해 주셔서 감사합니다. 7영업일 이내에 연락드리겠습니다！`,
+};
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let selLang = 'central';
+let hrPhotoURL = null;
+let voiceIds = {}; // langKey → elevenlabs voice_id
+let CFG = {};
+let ST = {
+  qIdx:0, qCount:0, maxQ:8,
+  isMuted:false, hrTalking:false,
+  timer:null, startT:null,
+  transcript:[], aiMsgs:[],
+  stream:null, actx:null, audioLoop:null,
+  srMake:null, sr:null, isRec:false, silT:null, accum:'',
+};
+const SYN = window.speechSynthesis;
+let kaTimer = null;
+let CVS, CTX, hrImg=null, mO=0, mT=0, raf=null, lipT=null;
+let DID = {on:false, imageUrl:null, voice:'th-TH-PremwadeeNeural'};
+
+// ══════════════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════════════
+(function(){
+  // Lang grid
+  const g = document.getElementById('lgrid');
+  Object.entries(LANGS).forEach(([k,l])=>{
+    const d=document.createElement('div');
+    d.className='lbtn'+(k==='central'?' sel':'');
+    d.innerHTML=`<span class="lbtn-flag">${l.flag}</span><span class="lbtn-name">${l.name}</span><span class="lbtn-sub">${l.sub}</span>`;
+    d.onclick=()=>{document.querySelectorAll('.lbtn').forEach(b=>b.classList.remove('sel'));d.classList.add('sel');selLang=k;};
+    g.appendChild(d);
+  });
+
+  // Voice grid
+  const vg = document.getElementById('vgrid');
+  Object.entries(LANGS).forEach(([k,l])=>{
+    const row=document.createElement('div'); row.className='vrow';
+    row.innerHTML=`<label>${l.flag} ${l.name}</label>
+      <div class="vrow-inp">
+        <input id="vid-${k}" list="vlist" placeholder="Voice ID"/>
+        <button class="vtest" onclick="testVoice('${k}')" title="ทดสอบเสียง">▶</button>
+      </div>`;
+    vg.appendChild(row);
+  });
+})();
+
+function onPhoto(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    hrPhotoURL=e.target.result;
+    const p=document.getElementById('phprev'); p.src=hrPhotoURL; p.style.display='block';
+    document.getElementById('phlbl').style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+
+async function fetchVoices(){
+  const st=document.getElementById('vstatus');
+  st.style.display='block'; st.style.color='var(--text2)'; st.textContent='กำลังดึง voices…';
+  try{
+    const r=await fetch('/api/voices');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const vl=document.getElementById('vlist');
+    vl.innerHTML='';
+    (d.voices||[]).forEach(v=>{
+      const o=document.createElement('option'); o.value=v.voice_id; o.label=v.name; vl.appendChild(o);
+    });
+    // Auto-fill Thai voices
+    const thai=(d.voices||[]).find(v=>v.labels?.language==='th'||v.name.toLowerCase().includes('thai')||v.name.toLowerCase().includes('prem'));
+    if(thai){
+      ['central','north','northeast','south','east'].forEach(k=>{
+        const el=document.getElementById('vid-'+k); if(el&&!el.value) el.value=thai.voice_id;
+      });
+      st.style.color='var(--green)';
+      st.innerHTML=`✓ พบ ${d.voices.length} voices · แนะนำไทย: <strong>${thai.name}</strong> (ใส่ให้อัตโนมัติแล้ว)`;
+    } else {
+      st.style.color='var(--green)'; st.textContent=`✓ พบ ${d.voices.length} voices`;
+    }
+  }catch(e){st.style.color='var(--red)'; st.textContent='Error: '+e.message;}
+}
+
+async function testVoice(k){
+  const vid=document.getElementById('vid-'+k)?.value.trim();
+  if(!vid){alert('ใส่ Voice ID ก่อนครับ');return;}
+  const texts={central:'สวัสดีครับ ยินดีต้อนรับ',north:'สวัสดีเจ้า ยินดีต้อนรับเน้อ',northeast:'สวัสดีเจ้า ยินดีต้อนรับเด้อ',south:'สวัสดีครับ ยินดีต้อนรับหนิ',east:'สวัสดีครับ ยินดีต้อนรับครับ',english:'Hello, welcome to the interview.',chinese:'您好，欢迎参加面试。',japanese:'こんにちは、面接へようこそ。',korean:'안녕하세요, 면접에 오신 것을 환영합니다.'};
+  try{
+    const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:texts[k]||'Hello',voice_id:vid})});
+    if(!r.ok){const e=await r.json().catch(()=>({}));alert('Error: '+(e.error||r.status));return;}
+    const blob=await r.blob();
+    new Audio(URL.createObjectURL(blob)).play();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ══════════════════════════════════════════════════════
+// START SESSION
+// ══════════════════════════════════════════════════════
+function startSession(){
+  const lang=selLang;
+  CFG = {
+    langKey: lang,
+    lang: LANGS[lang],
+    job: document.getElementById('job').value.trim()||'Software Engineer',
+    company: document.getElementById('company').value.trim()||'บริษัท',
+    maxQ: parseInt(document.getElementById('qcount').value),
+    didVoice: document.getElementById('did-voice').value,
+  };
+  ST.maxQ = CFG.maxQ;
+
+  // Collect voice IDs
+  Object.keys(LANGS).forEach(k=>{
+    const v=document.getElementById('vid-'+k)?.value.trim();
+    if(v) voiceIds[k]=v;
+  });
+
+  // Update UI
+  document.getElementById('hr-name').textContent = CFG.lang.hrName;
+  document.getElementById('cand-role').textContent = `${CFG.job} @ ${CFG.company}`;
+  document.getElementById('sq').textContent = `0/${CFG.maxQ}`;
+  document.getElementById('b-ai').textContent = '✨ Gemini AI';
+  document.getElementById('b-ai').style.color = 'var(--blue)';
+  if(voiceIds[lang]){ document.getElementById('b-voice').textContent='🎙 ElevenLabs'; document.getElementById('b-voice').style.color='var(--green)'; }
+  const hrImgUrl = document.getElementById('hr-img-url')?.value.trim();
+  if(hrImgUrl){ document.getElementById('b-av').textContent='🎭 D-ID'; document.getElementById('b-av').style.color='var(--green)'; }
+
+  document.getElementById('setup').style.display='none';
+  document.getElementById('call').style.display='flex';
+
+  initCanvas();
+  initDID();
+  startMedia(); // auto-request camera
+
+  ST.startT=Date.now();
+  ST.timer=setInterval(()=>{
+    const s=Math.floor((Date.now()-ST.startT)/1000);
+    document.getElementById('stime').textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+  },1000);
+
+  beginInterview();
+}
+
+// ══════════════════════════════════════════════════════
+// MEDIA (Camera + Mic)
+// ══════════════════════════════════════════════════════
+async function startMedia(){
+  const ov=document.getElementById('cam-ov');
+  const btn=document.getElementById('cam-allow-btn');
+  const err=document.getElementById('cam-error');
+  const retry=document.getElementById('cam-retry');
+  if(btn) btn.disabled=true;
+  if(err) err.style.display='none';
+  if(retry) retry.style.display='none';
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'},
+      audio:true
+    });
+    ST.stream=stream;
+    const vid=document.getElementById('cam-vid');
+    vid.srcObject=stream; vid.style.display='block';
+    if(ov) ov.style.display='none';
+    document.getElementById('cam-dot').style.background='var(--green)';
+    document.getElementById('cam-lbl').textContent='กล้องเปิด';
+    toast('กล้อง + ไมค์พร้อม ✓');
+    startAudioMeter(stream);
+    initSR();
+  }catch(e){
+    if(btn) btn.disabled=false;
+    const msg=e.name==='NotAllowedError'?'ไม่ได้รับอนุญาต — กด Allow ใน browser แล้วกด "ลองใหม่"':e.name==='NotFoundError'?'ไม่พบกล้อง/ไมค์ในอุปกรณ์นี้':'เกิดข้อผิดพลาด: '+e.message;
+    if(err){err.textContent=msg; err.style.display='block';}
+    if(retry) retry.style.display='block';
+    document.getElementById('cam-dot').style.background='var(--red)';
+    document.getElementById('cam-lbl').textContent='ไม่มีสิทธิ์';
+    toast(msg);
+  }
+}
+
+function startAudioMeter(stream){
+  try{
+    ST.actx=new(window.AudioContext||window.webkitAudioContext)();
+    const src=ST.actx.createMediaStreamSource(stream);
+    const an=ST.actx.createAnalyser(); an.fftSize=256; an.smoothingTimeConstant=.8;
+    src.connect(an);
+    const buf=new Uint8Array(an.frequencyBinCount);
+    ST.audioLoop=setInterval(()=>{
+      if(ST.hrTalking||ST.isRec) return;
+      an.getByteFrequencyData(buf);
+      const avg=buf.slice(0,64).reduce((a,b)=>a+b,0)/64;
+      const on=avg>18;
+      document.getElementById('cand-wave').className='wave'+(on?' on':'');
+      document.getElementById('cand-ring').className='ring'+(on?' on':'');
+    },80);
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════
+// SPEECH RECOGNITION — auto mic, no re-prompt
+// ══════════════════════════════════════════════════════
+function initSR(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('Browser ไม่รองรับ mic — ใช้ Chrome');return;}
+  ST.srMake=function(){
+    const r=new SR();
+    r.lang=CFG.lang.vl;
+    r.continuous=true;
+    r.interimResults=true;
+    r.onresult=e=>{
+      let itr='',fin='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const t=e.results[i][0].transcript;
+        if(e.results[i].isFinal) fin+=t; else itr+=t;
+      }
+      document.getElementById('inp').value=(ST.accum+fin+itr).trim();
+      if(fin) ST.accum+=fin;
+      resetSil();
+    };
+    r.onspeechend=()=>resetSil(400);
+    r.onend=()=>{ST.isRec=false;micUI(false);if(!ST.hrTalking&&!ST.isMuted)setTimeout(startListen,300);};
+    r.onerror=e=>{if(['aborted','no-speech'].includes(e.error))return;console.warn('SR:',e.error);};
+    return r;
+  };
+}
+
+function resetSil(ms){
+  clearTimeout(ST.silT);
+  ST.silT=setTimeout(()=>{
+    const t=document.getElementById('inp').value.trim();
+    if(t){ST.accum='';stopListen();sendReply();}
+  },ms||1800);
+}
+function startListen(){
+  if(!ST.srMake||ST.hrTalking||ST.isRec||ST.isMuted)return;
+  try{ST.accum='';document.getElementById('inp').value='';ST.sr=ST.srMake();ST.sr.start();ST.isRec=true;micUI(true);}
+  catch(e){console.warn('SR start:',e.message);}
+}
+function stopListen(){
+  clearTimeout(ST.silT);
+  if(ST.sr&&ST.isRec){try{ST.sr.abort();}catch(e){}}
+  ST.isRec=false;micUI(false);
+}
+function micUI(on){
+  document.getElementById('mic-btn').className='ibtn mic'+(on?' rec':'');
+  setStatus(on?'กำลังฟัง… พูดได้เลย':'รอคำตอบ');
+}
+function toggleMic(){
+  if(!ST.srMake){toast('กรุณาอนุญาตกล้อง/ไมค์ก่อน');return;}
+  if(ST.isRec){stopListen();toast('หยุดฟัง');}
+  else{startListen();toast('กำลังฟัง…');}
+}
+
+// ══════════════════════════════════════════════════════
+// CANVAS TALKING HEAD
+// ══════════════════════════════════════════════════════
+function initCanvas(){
+  CVS=document.getElementById('hr-canvas');
+  CTX=CVS.getContext('2d');
+  const cell=document.getElementById('call').querySelector('.vcell');
+  const resize=()=>{CVS.width=cell.clientWidth;CVS.height=cell.clientHeight;};
+  new ResizeObserver(resize).observe(cell);resize();
+  if(hrPhotoURL){const img=new Image();img.onload=()=>{hrImg=img;};img.src=hrPhotoURL;}
+  (function loop(){raf=requestAnimationFrame(loop);mO+=(mT-mO)*.25;drawHR();})();
+}
+function drawHR(){
+  if(!CTX)return;
+  const W=CVS.width,H=CVS.height;
+  CTX.clearRect(0,0,W,H);
+  if(hrImg){
+    const iR=hrImg.width/hrImg.height,cR=W/H;
+    let sw,sh,sx,sy;
+    if(iR>cR){sh=hrImg.height;sw=sh*cR;sx=(hrImg.width-sw)/2;sy=0;}
+    else{sw=hrImg.width;sh=sw/cR;sx=0;sy=(hrImg.height-sh)/2;}
+    CTX.drawImage(hrImg,sx,sy,sw,sh,0,0,W,H);
+    if(mO>.05){
+      const fx=W/2,fy=H*.68,mw=W*.09,mh=mO*H*.04+2;
+      CTX.save();CTX.globalAlpha=mO*.55;CTX.fillStyle='#000';CTX.beginPath();CTX.ellipse(fx,fy,mw,Math.max(mh,2),0,0,Math.PI*2);CTX.fill();CTX.restore();
+      CTX.save();CTX.globalAlpha=mO*.7;CTX.fillStyle='#1a0005';CTX.beginPath();CTX.ellipse(fx,fy,mw*.75,Math.max(mh*.8,1),0,0,Math.PI*2);CTX.fill();CTX.restore();
+    }
+  }else{
+    drawFallback(W,H);
+  }
+}
+function drawFallback(W,H){
+  const c=CTX,cx=W/2,sc=H/420;
+  const g=c.createRadialGradient(cx,H*.3,0,cx,H*.3,H*.7);
+  g.addColorStop(0,'#1a2a4a');g.addColorStop(1,'#060c1e');
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+  c.fillStyle='#1e293b';c.beginPath();c.ellipse(cx,H*1.05,110*sc,70*sc,0,0,Math.PI*2);c.fill();
+  c.fillRect(cx-88*sc,H*.78,176*sc,100*sc);
+  c.fillStyle='#f9c4a0';c.beginPath();c.ellipse(cx,H*.54,60*sc,62*sc,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#1a0a00';
+  c.beginPath();c.ellipse(cx,H*.4,54*sc,24*sc,0,0,Math.PI);c.fill();
+  c.beginPath();c.ellipse(cx,H*.54,61*sc,45*sc,0,Math.PI,Math.PI*2);c.fill();
+  [[cx-14*sc,H*.51],[cx+14*sc,H*.51]].forEach(([ex,ey])=>{
+    c.fillStyle='white';c.beginPath();c.ellipse(ex,ey,11*sc,12*sc,0,0,Math.PI*2);c.fill();
+    c.fillStyle='#1a1005';c.beginPath();c.ellipse(ex,ey+2*sc,7*sc,7*sc,0,0,Math.PI*2);c.fill();
+    c.fillStyle='white';c.beginPath();c.ellipse(ex+2*sc,ey-sc,2*sc,2*sc,0,0,Math.PI*2);c.fill();
+  });
+  const mw=14*sc,mh=Math.max(mO*18*sc,2);
+  c.fillStyle='#c04060';c.beginPath();c.ellipse(cx,H*.64,mw,4*sc,0,0,Math.PI*2);c.fill();
+  if(mO>.05){c.fillStyle='#1a0005';c.beginPath();c.ellipse(cx,H*.64+2*sc,mw*.75,mh,0,0,Math.PI*2);c.fill();}
+  c.fillStyle='rgba(30,64,175,.8)';
+  c.beginPath();c.roundRect(cx-44*sc,H*.85,88*sc,18*sc,3*sc);c.fill();
+  c.fillStyle='white';c.font=`bold ${8*sc}px Inter,sans-serif`;c.textAlign='center';
+  c.fillText('HR MANAGER',cx,H*.85+13*sc);
+}
+function startLip(){lipT=setInterval(()=>{mT=Math.random()>.4?Math.random()*.9+.1:0;},140);}
+function stopLip(){clearInterval(lipT);mT=0;}
+
+// ══════════════════════════════════════════════════════
+// D-ID Talking Avatar
+// ══════════════════════════════════════════════════════
+function initDID(){
+  const url = document.getElementById('hr-img-url')?.value.trim();
+  if(!url){ console.log('No HR image URL — using Canvas'); return; }
+  DID.on = true;
+  DID.imageUrl = url;
+  DID.voice = CFG.didVoice || 'th-TH-PremwadeeNeural';
+  // Also show preview on canvas
+  if(url){const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{hrImg=img;};img.src=url;}
+  toast('D-ID Avatar พร้อม ✓');
+}
+
+async function speakDID(text){
+  if(!DID.on || !DID.imageUrl) return false;
+  try{
+    const r = await fetch('/api/did',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        image_url: DID.imageUrl,
+        text: text,
+        voice_id: DID.voice,
+      })
+    });
+    if(!r.ok){ console.warn('D-ID error:', r.status); return false; }
+    const d = await r.json();
+    if(!d.result_url) return false;
+    const vid = document.getElementById('did-video');
+    if(vid){
+      vid.src = d.result_url;
+      vid.style.display = 'block';
+      CVS.style.display = 'none';
+      await new Promise((res,rej)=>{
+        vid.onended = res;
+        vid.onerror = rej;
+        vid.play().catch(rej);
+      });
+      vid.style.display = 'none';
+      CVS.style.display = 'block';
+    }
+    return true;
+  }catch(e){ console.warn('D-ID speak error:', e); return false; }
+}
+
+// AI — Gemini → Question Bank fallback
+// ══════════════════════════════════════════════════════
+async function callAI(userMsg){
+  const sys=CFG.lang.sys+`\nตำแหน่ง: ${CFG.job} | บริษัท: ${CFG.company} | คำถามที่ ${ST.qCount}/${ST.maxQ}`+(ST.qCount>=ST.maxQ?'\n[นี่คือการแลกเปลี่ยนสุดท้าย กรุณาสรุปและกล่าวลา]':'');
+  if(userMsg)ST.aiMsgs.push({role:'user',content:userMsg});
+  const history=ST.aiMsgs.slice(0,-1).map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+  const message=userMsg||(GREET[CFG.langKey]||GREET.central)(CFG.job,CFG.company);
+
+  // Retry ไม่จำกัด จนกว่า Gemini จะตอบ
+  for(let attempt=0; attempt<10; attempt++){
+    try{
+      if(attempt>0){ setStatus(`HR กำลังคิด… (${attempt+1})`); await w(3000); }
+      const r=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sys,history,message})});
+      if(r.ok){
+        const d=await r.json();
+        if(d.text){ ST.aiMsgs.push({role:'assistant',content:d.text}); return d.text; }
+      }
+      if(r.status===429){ await w(5000); continue; }
+    }catch(e){ console.warn('Gemini attempt',attempt,e.message); }
+  }
+  // fallback question bank เฉพาะกรณี Gemini ไม่ตอบจริงๆ
+  return null;
+}
+
+// ══════════════════════════════════════════════════════
+// SPEECH OUTPUT
+// ══════════════════════════════════════════════════════
+function chunks(text,max=160){
+  if(text.length<=max)return[text];
+  const out=[]; let cur='';
+  text.split(/(?<=[.!?。ๆ\n])\s*/u).forEach(s=>{if((cur+s).length>max&&cur){out.push(cur.trim());cur=s;}else cur+=(cur?' ':'')+s;});
+  if(cur.trim())out.push(cur.trim());
+  return out.filter(Boolean);
+}
+
+async function speakHR(text){
+  setHRTalking(true);
+  if(ST.isMuted){setHRTalking(false);return;}
+
+  // Try D-ID first (if HR photo uploaded)
+  if(DID.on){
+    const ok = await speakDID(text);
+    if(ok){stopLip();setHRTalking(false);return;}
+    toast('D-ID ไม่ตอบสนอง — ใช้ Web Speech แทน');
+  }
+
+  // Try ElevenLabs
+  const vid=voiceIds[CFG.langKey];
+  if(vid){const ok=await speakEL(text,vid);if(ok){stopLip();setHRTalking(false);return;}}
+
+  // Fallback Web Speech
+  await speakWS(text);
+  stopLip();setHRTalking(false);
+}
+
+async function speakEL(text,vid){
+  try{
+    const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,voice_id:vid,model_id:'eleven_multilingual_v2'})});
+    if(!r.ok)return false;
+    const blob=await r.blob();
+    if(SIMLI.on)simliAudio(blob);
+    const url=URL.createObjectURL(blob);
+    await new Promise((res,rej)=>{
+      const a=new Audio(url);
+      a.onended=()=>{URL.revokeObjectURL(url);res();};
+      a.onerror=()=>{URL.revokeObjectURL(url);rej();};
+      a.onplay=()=>startLip();
+      a.play().catch(rej);
+    });
+    return true;
+  }catch(e){return false;}
+}
+
+function speakWS(text){
+  return new Promise(res=>{
+    SYN.cancel();
+    const cs=chunks(text); let i=0;
+    kaTimer=setInterval(()=>{if(SYN.speaking&&!SYN.paused){SYN.pause();setTimeout(()=>SYN.resume(),50);}},9000);
+    startLip();
+    function next(){
+      if(i>=cs.length){clearInterval(kaTimer);res();return;}
+      const u=new SpeechSynthesisUtterance(cs[i]);
+      u.lang=CFG.lang.vl;u.rate=CFG.lang.rate;u.pitch=CFG.lang.pitch;
+      u.onend=()=>{i++;next();};
+      u.onerror=e=>{if(e.error==='interrupted'){i++;next();return;}clearInterval(kaTimer);res();};
+      SYN.speak(u);
+    }
+    next();
+  });
+}
+
+function setHRTalking(on){
+  ST.hrTalking=on;
+  document.getElementById('hr-ring').className='ring'+(on?' on':'');
+  document.getElementById('hr-wave').className='wave'+(on?' on':'');
+  if(on){stopListen();setStatus('HR กำลังพูด…');}
+  else{setStatus('รอคำตอบ');setTimeout(startListen,500);}
+}
+function toggleMute(){
+  ST.isMuted=!ST.isMuted;
+  const b=document.getElementById('mute-btn');
+  b.className='tpill'+(ST.isMuted?' muted':'');
+  b.textContent=ST.isMuted?'🔇 ปิดเสียง':'🔊 เสียง';
+  if(ST.isMuted){SYN.cancel();clearInterval(kaTimer);stopLip();setHRTalking(false);}
+  toast(ST.isMuted?'ปิดเสียง':'เปิดเสียง');
+}
+
+// ══════════════════════════════════════════════════════
+// INTERVIEW FLOW
+// ══════════════════════════════════════════════════════
+const w=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function beginInterview(){
+  ST.aiMsgs=[];
+  setStatus('HR กำลังทักทาย…');
+  await w(600);addTyping();
+  let q=await callAI(null);
+  if(!q)q=(GREET[CFG.langKey]||GREET.central)(CFG.job,CFG.company);
+  removeTyping();
+  ST.transcript.push({role:'HR',text:q});
+  addMsg('l',q,CFG.lang.hrName,'#4f8ef7');
+  ST.qCount=1;updProg();
+  await speakHR(q);
+  enableInp();
+}
+
+async function nextQ(answer){
+  disableInp();stopListen();
+  ST.transcript.push({role:'ผู้สมัคร',text:answer});
+  const isLast=ST.qCount>=ST.maxQ;
+  setStatus(isLast?'HR กำลังปิดสัมภาษณ์…':'HR กำลังคิด…');
+  await w(400);addTyping();
+  let q=await callAI(answer);
+  if(!q){
+    await w(500);
+    q=isLast?(CLOSING[CFG.langKey]||CLOSING.central)():(QS[CFG.langKey]||QS.central)[Math.min(ST.qIdx,6)](CFG.job,CFG.company);
+    if(!isLast)ST.qIdx++;
+  }
+  removeTyping();
+  ST.transcript.push({role:'HR',text:q});
+  addMsg('l',q,CFG.lang.hrName,'#4f8ef7');
+  if(!isLast){ST.qCount++;updProg();}
+  await speakHR(q);
+  if(isLast)setTimeout(finishSession,1500);
+  else enableInp();
+}
+
+async function sendReply(){
+  const inp=document.getElementById('inp');
+  const txt=inp.value.trim();if(!txt)return;
+  inp.value='';ST.accum='';
+  stopListen();SYN.cancel();clearInterval(kaTimer);stopLip();setHRTalking(false);
+  addMsg('r',txt,'คุณ','#34d399');
+  await nextQ(txt);
+}
+
+// ══════════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════════
+function addMsg(side,text,name,col){
+  const c=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg '+side;
+  const ini=name.split(' ').map(w2=>w2[0]).join('').slice(0,2).toUpperCase();
+  d.innerHTML=`<div class="mav" style="background:${col}18;border-color:${col}33;color:${col}">${ini}</div>
+    <div><div style="font-size:9px;color:var(--text3);margin-bottom:2px;${side==='r'?'text-align:right':''}">${name}</div>
+    <div class="mbub">${text}</div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+let _typ=null;
+function addTyping(){
+  const c=document.getElementById('msgs');
+  _typ=document.createElement('div');_typ.className='msg l';_typ.id='__t';
+  _typ.innerHTML=`<div class="mav" style="background:var(--bg4)">···</div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  c.appendChild(_typ);c.scrollTop=c.scrollHeight;
+}
+function removeTyping(){document.getElementById('__t')?.remove();}
+function updProg(){
+  const p=Math.min((ST.qCount/ST.maxQ)*100,100);
+  document.getElementById('sprog').style.width=p+'%';
+  document.getElementById('sq').textContent=`${ST.qCount}/${ST.maxQ}`;
+}
+function setStatus(t){document.getElementById('sstatus').textContent=t;}
+function disableInp(){document.getElementById('send-btn').disabled=true;document.getElementById('inp').disabled=true;}
+function enableInp(){document.getElementById('send-btn').disabled=false;const i=document.getElementById('inp');i.disabled=false;i.focus();}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendReply();}});
+});
+
+// ══════════════════════════════════════════════════════
+// END
+// ══════════════════════════════════════════════════════
+function endSession(){if(confirm('จบการสัมภาษณ์?'))finishSession();}
+
+async function finishSession(){
+  SYN.cancel();clearInterval(kaTimer);clearInterval(ST.timer);clearInterval(ST.audioLoop);
+  stopLip();cancelAnimationFrame(raf);stopListen();setHRTalking(false);
+  ST.stream?.getTracks().forEach(t=>t.stop());
+  if(ST.actx)ST.actx.close().catch(()=>{});
+  // D-ID cleanup (no persistent connection)
+  document.getElementById('call').style.display='none';
+  document.getElementById('end').style.display='flex';
+  const score=Math.floor(Math.random()*22)+72;
+  document.getElementById('escore').textContent=score;
+  setTimeout(()=>{document.getElementById('arc').style.strokeDashoffset=264-(score/100)*264;},200);
+  const ans=ST.transcript.filter(m=>m.role==='ผู้สมัคร');
+  const total=ans.reduce((a,m)=>a+(m.text||'').split(/\s+/).length,0);
+  const avg=ans.length?Math.round(total/ans.length):0;
+  const grid=document.getElementById('fbgrid');
+  [[avg>=30?'var(--green)':'var(--amber)',avg>=30?'✓':'↑',avg>=30?'จุดเด่น':'พัฒนาได้',avg>=30?'ให้คำตอบที่มีรายละเอียดดี':'ควรขยายความคำตอบให้มากขึ้น'],
+   [ans.length>=ST.maxQ-1?'var(--green)':'var(--amber)',ans.length>=ST.maxQ-1?'✓':'↑',ans.length>=ST.maxQ-1?'จุดเด่น':'พัฒนาได้',ans.length>=ST.maxQ-1?'ตอบครบทุกคำถาม':'ควรเตรียมตอบให้ครบ'],
+   ['var(--blue)','★','สรุป',`ตอบ ${ans.length} คำถาม เฉลี่ย ${avg} คำต่อคำตอบ`]
+  ].forEach(([c,ic,lb,tx])=>{
+    grid.innerHTML+=`<div class="fbitem"><div style="color:${c};font-size:15px;flex-shrink:0">${ic}</div><div><strong style="color:var(--text)">${lb}:</strong> ${tx}</div></div>`;
+  });
+}
+
+function dlTranscript(){
+  const lines=ST.transcript.map(m=>`[${m.role}]\n${m.text}`).join('\n\n');
+  const blob=new Blob([`AI HR Interview\n${CFG.job} @ ${CFG.company}\n${'='.repeat(50)}\n\n${lines}`],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='interview.txt';a.click();
+}
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
