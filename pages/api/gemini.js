@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   if (!KEY) return res.status(500).json({ error: 'GOOGLE_API_KEY not set' });
   const { system, history = [], message } = req.body;
   if (!message) return res.status(400).json({ error: 'message required' });
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${KEY}`;
   const body = {
     system_instruction: system ? { parts: [{ text: system }] } : undefined,
     contents: [...history, { role: 'user', parts: [{ text: message }] }],
