@@ -829,10 +829,20 @@ async function callAI(userMsg){
   if(userMsg)ST.aiMsgs.push({role:'user',content:userMsg});
   const history=ST.aiMsgs.slice(0,-1).map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
   const message=userMsg||(GREET[CFG.langKey]||GREET.central)(CFG.job,CFG.company);
-  try{
-    const r=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sys,history,message})});
-    if(r.ok){const d=await r.json();if(d.text){ST.aiMsgs.push({role:'assistant',content:d.text});return d.text;}}
-  }catch(e){console.warn('Gemini:',e.message);}
+
+  // Retry ไม่จำกัด จนกว่า Gemini จะตอบ
+  for(let attempt=0; attempt<10; attempt++){
+    try{
+      if(attempt>0){ setStatus(`HR กำลังคิด… (${attempt+1})`); await w(3000); }
+      const r=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sys,history,message})});
+      if(r.ok){
+        const d=await r.json();
+        if(d.text){ ST.aiMsgs.push({role:'assistant',content:d.text}); return d.text; }
+      }
+      if(r.status===429){ await w(5000); continue; }
+    }catch(e){ console.warn('Gemini attempt',attempt,e.message); }
+  }
+  // fallback question bank เฉพาะกรณี Gemini ไม่ตอบจริงๆ
   return null;
 }
 
