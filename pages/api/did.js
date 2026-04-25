@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const { image_url, text, voice_id } = req.body;
   if (!image_url || !text) return res.status(400).json({ error: 'image_url and text required' });
 
-  const auth = 'Basic ' + Buffer.from(KEY).toString('base64');
+  const auth = `Basic ${KEY}`;
 
   try {
     // Step 1: Create talk
